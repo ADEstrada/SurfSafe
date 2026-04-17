@@ -146,8 +146,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
 document.addEventListener('DOMContentLoaded', () => {
     displayLiveDate();
-    // setupWaveChart(); 
-    // setupTideChart();
+    setupWaveChart(); 
+    setupTideChart();
 
     // DATA PRIVACY ACT AND TERM AND CONDITION TAB SWITCHING
     const termsModal = document.getElementById('termsModal');
