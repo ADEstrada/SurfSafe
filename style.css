@@ -5,6 +5,8 @@
     --surf-black: #000000;
     --surf-border: #e0e0e0;
     --surf-gray: #F3F3F3;
+    --surf-grayish: #666;
+
 
     --font-family: 'Poppins', sans-serif;
 }
@@ -176,6 +178,123 @@ body {
     align-items: center;
     margin-bottom: 24px;
     font-size: 13px;
+}
+
+.signup-card {
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    max-width: 450px; 
+    overflow: hidden;
+}
+
+.signup-card.trainer-expanded {
+    max-width: 900px;
+}
+
+.form-body-wrapper {
+    display: flex;
+    gap: 0;
+    transition: all 0.5s ease;
+    align-items: flex-start;
+}
+
+.form-column {
+    flex: 0 0 100%; 
+    padding: 0 5px;
+    transition: all 0.5s ease;
+}
+
+
+.trainer-docs {
+    display: none; 
+    opacity: 0;
+    border-left: 1px solid var(--surf-border);
+    padding-left: 30px !important;
+    text-align: left;
+}
+
+.signup-card.trainer-expanded .form-column {
+    flex: 0 0 50%; 
+}
+
+.signup-card.trainer-expanded .trainer-docs {
+    display: block;
+    opacity: 1;
+}
+
+.upload-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--surf-navy);
+    margin-bottom: 5px;
+}
+
+.upload-subtitle {
+    font-size: 13px;
+    color: var(--surf-grayish);
+    margin-bottom: 20px;
+}
+
+.file-input {
+    padding: 8px 12px;
+    font-size: 12px;
+}
+
+.terms-container {
+    display: none; 
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    text-align: left;
+    margin-top: 15px;
+}
+
+.trainer-expanded .terms-container {
+    display: block;
+    opacity: 1;
+}
+
+.form-check-label {
+    font-size: 13px;
+    color: var(--surf-black);
+}
+
+#trainerConsentText {
+    font-style: italic;
+    font-size: 11px;
+    border-left: 3px solid var(--surf-navy);
+    padding-left: 12px;
+    margin-top: 10px;
+}
+
+
+.custom-modal .nav-tabs {
+    border-bottom: 2px solid var(--surf-white);
+}
+
+.custom-modal .nav-link {
+    color: var(--surf-black);
+    font-weight: 600;
+    border: none;
+    padding: 10px 20px;
+}
+
+.custom-modal .nav-link.active {
+    color: var(--surf-navy) !important;
+    border-bottom: 3px solid var(--surf-navy) !important;
+    background: transparent;
+}
+
+.custom-modal .tab-pane {
+    max-height: 400px; 
+    overflow-y: auto;
+    padding-top: 15px;
+}
+
+.tab-pane::-webkit-scrollbar {
+    width: 6px;
+}
+.tab-pane::-webkit-scrollbar-thumb {
+    background-color: #ddd;
+    border-radius: 10px;
 }
 
 .remember-me input {
@@ -659,7 +778,7 @@ body {
 
 .summary-text {
     font-weight: 500;
-    color: #555;
+    color: var(--surf-grayish);
 }
 
 .detail-item {
@@ -844,6 +963,26 @@ body {
         display: inline-block; 
         max-width: 90%; 
         line-height: 1.4; 
+    }
+
+    .signup-card.trainer-expanded {
+        max-width: 450px;
+    }
+
+    .form-body-wrapper {
+        flex-direction: column;
+    }
+
+    .signup-card.trainer-expanded .form-column {
+        flex: 0 0 100%;
+    }
+
+    .trainer-docs {
+        border-left: none;
+        border-top: 1px solid var(--surf-border);
+        padding-left: 5px !important;
+        padding-top: 20px;
+        margin-top: 20px;
     }
 }
 

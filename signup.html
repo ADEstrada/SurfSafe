@@ -28,45 +28,98 @@
 
                 <!-- ROLE SELECTOR -->
                 <div class="role-container">
-                <span class="role-label">I am a:</span>
-                <div class="type-selector">
-                    <button type="button" class="type-btn active" onclick="setRole('Tourist', this)">Tourist</button>
-                    <button type="button" class="type-btn" onclick="setRole('Trainer', this)">Trainer</button>
+                    <span class="role-label">I am a:</span>
+                    <div class="type-selector">
+                        <button type="button" class="type-btn active" onclick="setRole('Tourist', this)">Tourist</button>
+                        <button type="button" class="type-btn" onclick="setRole('Trainer', this)">Trainer</button>
+                    </div>
                 </div>
-            </div>
 
                 <form id="signupForm">
-                
-                    <!-- FIRST NAME AND LAST NAME FORM -->
-                    <div class="name-row">
-                        <div class="form-group">
-                            <label for="firstName" class="form-label">First Name</label>
-                            <input type="text" class="form-control" id="firstName" placeholder="Jane" required>
+                    <div class="form-body-wrapper">
+                        
+                    
+                        <div class="form-column">
+
+                            <!-- FIRST NAME AND LAST NAME FORM -->
+                            <div class="name-row">
+                                <div class="form-group">
+                                    <label for="firstName" class="form-label">First Name</label>
+                                    <input type="text" class="form-control" id="firstName" placeholder="Jane" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="lastName" class="form-label">Last Name</label>
+                                    <input type="text" class="form-control" id="lastName" placeholder="Doe" required>
+                                </div>
+                            </div>
+
+                            <!-- EMAIL FORM -->
+                            <div class="form-group">
+                                <label for="email" class="form-label">Email Address</label>
+                                <input type="email" class="form-control" id="email" placeholder="name@company.com" required>
+                            </div>
+
+                            <!-- PASSWORD FORM -->
+                            <div class="form-group">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="password" placeholder="••••••••" required>
+                            </div>
+
+                            <!-- CONFIRM PASSWORD FORM -->
+                            <div class="form-group confirm-password" id="confirmPasswordField">
+                                <label for="confirm-password" class="form-label">Confirm Password</label>
+                                <input type="password" class="form-control" id="confirm-password" placeholder="••••••••" required>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="lastName" class="form-label">Last Name</label>
-                            <input type="text" class="form-control" id="lastName" placeholder="Doe" required>
+
+                        <!-- ADDITIONAL FIELDS FOR VERIFICATION -->
+                        <div id="trainerFields" class="form-column trainer-docs">
+                            <h5 class="upload-title">Professional Verification</h5>
+                            <p class="upload-subtitle">Upload clear copies for admin approval.</p>
+
+                            <div class="form-group">
+                                <label class="form-label">DOT Accreditation Cert/ID</label>
+                                <input type="file" class="form-control file-input" id="dotCert">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Professional Training Cert</label>
+                                <input type="file" class="form-control file-input" id="trainingCert">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Water Safety & First Aid Card</label>
+                                <input type="file" class="form-control file-input" id="waterSafety">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Valid NBI Clearance</label>
+                                <input type="file" class="form-control file-input" id="nbiClearance">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Negative Drug Test Result</label>
+                                <input type="file" class="form-control file-input" id="drugTest">
+                            </div>
                         </div>
+
                     </div>
 
-                    <!-- EMAIL FORM -->
-                    <div class="form-group">
-                        <label for="email" class="form-label">Email Address</label>
-                        <input type="email" class="form-control" id="email" placeholder="name@company.com" required>
+                    <div class="terms-container">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="termsCheck">
+                            <label class="form-check-label" for="termsCheck">
+                                I agree to the 
+                                <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">Terms and Conditions</a> and 
+                                <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal" data-privacy="true">Privacy Policy</a>.
+                            </label>
+                        </div>
+                        <p class="small text-muted" id="trainerConsentText" style="display:none;">
+                            *By signing up as a Trainer, you consent to the collection and verification of the official documents provided.
+                        </p>
                     </div>
 
-                    <!-- PASSWORD FORM -->
-                    <div class="form-group">
-                        <label for="password" class="form-label">Password</label>
-                        <input type="password" class="form-control" id="password" placeholder="••••••••" required>
-                    </div>
-
-                    <div class="form-group confirm-password" id="confirmPasswordField">
-                        <label for="confirm-password" class="form-label">Confirm Password</label>
-                        <input type="password" class="form-control" id="confirm-password" placeholder="••••••••" required>
-                    </div>
-
-                     <button type="submit" class="signupBtn">Sign Up</button>
+                    <button type="submit" class="signupBtn">Sign Up</button>
 
                 </form>
 
@@ -76,8 +129,64 @@
             </div>
         </div>
 
+        <div class="modal fade" id="termsModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+
+                <div class="modal-content custom-modal">
+
+                    <div class="modal-header d-flex flex-column align-items-start">
+                        <div class="d-flex justify-content-between w-100 mb-3">
+                            <h5 class="modal-title"><b>Legal Information</b></h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+
+                        <ul class="nav nav-tabs w-100" id="legalTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="terms-tab" data-bs-toggle="tab" data-bs-target="#terms-content" type="button" role="tab">Terms & Conditions</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="privacy-tab" data-bs-toggle="tab" data-bs-target="#privacy-content" type="button" role="tab">Privacy Policy</button>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="modal-body">
+                        <div class="tab-content" id="legalTabsContent">
+
+                            <!-- TERMS AND CONDITION -->
+                            <div class="tab-pane fade show active" id="terms-content" role="tabpanel">
+                                <div class="p-2">
+                                    <h6><b>User Responsibilities</b></h6>
+                                    <p>By using SurfSafe, you agree to provide accurate information. Trainers are responsible for the validity of their uploaded certifications.</p>
+                                    <h6><b>Account Approval</b></h6>
+                                    <p>Trainer accounts are subject to manual verification by the Admin before full access to the platform is granted.</p>
+                                </div>
+                            </div>
+
+                            <!-- PRIVACY ACT -->
+                            <div class="tab-pane fade" id="privacy-content" role="tabpanel">
+                                <div class="p-2">
+                                    <h6><b>Data Privacy Act of 2012 Compliance</b></h6>
+                                    <p>We take your privacy seriously. Your sensitive documents (NBI, Drug Test) are encrypted and used only for trainer verification.</p>
+                                    <h6><b>Storage & Protection</b></h6>
+                                    <p>Data is stored securely and will be deleted once the trainer account is deactivated or upon request, following government regulations.</p>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn-signup w-auto px-4" data-bs-dismiss="modal">I Understand</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
     </body>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="script.js"></script>
 
 </html>

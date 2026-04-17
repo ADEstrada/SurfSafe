@@ -1,9 +1,29 @@
  // ROLE SELECTION - signup.html
-let selectedRole = 'Tourist';
 function setRole(role, btn) {
-    selectedRole = role;
-    document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+    selectedRole = role; 
+
+    const buttons = document.querySelectorAll('.type-btn');
+    buttons.forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
+
+    const card = document.querySelector('.signup-card');
+    const trainerFields = document.getElementById('trainerFields');
+    const consentText = document.getElementById('trainerConsentText'); 
+    const termsCheck = document.getElementById('termsCheck'); 
+    const fileInputs = trainerFields.querySelectorAll('input[type="file"]');
+
+    if (role === 'Trainer') {
+        card.classList.add('trainer-expanded');
+        consentText.style.display = 'block'; 
+        fileInputs.forEach(input => input.required = true);
+        termsCheck.required = true; 
+    } else {
+        card.classList.remove('trainer-expanded');
+        consentText.style.display = 'none';
+        fileInputs.forEach(input => input.required = false);
+        termsCheck.required = false; 
+        termsCheck.checked = false;  
+    }
 }
 
 // ACTIVE FORECAST CARD - index.html
@@ -116,17 +136,35 @@ function displayLiveDate() {
     dateElement.innerText = now.toLocaleDateString('en-US', options);
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    displayLiveDate();
-    setupWaveChart(); 
-    setupTideChart();
-});
-
-
 // CREDITS
 document.addEventListener('DOMContentLoaded', function () {
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
     var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
         return new bootstrap.Tooltip(tooltipTriggerEl)
     })
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    displayLiveDate();
+    // setupWaveChart(); 
+    // setupTideChart();
+
+    // DATA PRIVACY ACT AND TERM AND CONDITION TAB SWITCHING
+    const termsModal = document.getElementById('termsModal');
+    if (termsModal) {
+        termsModal.addEventListener('shown.bs.modal', function (event) {
+            const triggerElement = event.relatedTarget; 
+            if (triggerElement && triggerElement.hasAttribute('data-privacy')) {
+                setTimeout(() => {
+                    const privacyTabTrigger = document.getElementById('privacy-tab');
+                    if (privacyTabTrigger) bootstrap.Tab.getOrCreateInstance(privacyTabTrigger).show();
+                }, 10);
+            } else {
+                setTimeout(() => {
+                    const termsTabTrigger = document.getElementById('terms-tab');
+                    if (termsTabTrigger) bootstrap.Tab.getOrCreateInstance(termsTabTrigger).show();
+                }, 10);
+            }
+        });
+    }
 });
