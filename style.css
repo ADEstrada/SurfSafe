@@ -268,7 +268,7 @@ body {
     flex: 1;
 }
 
-.home-section {
+.home-section, .marine-section {
     display: block; 
     width: 100%;
 }
@@ -538,13 +538,187 @@ body {
     margin: 0 auto;
 }
 
-.girl-img-surf {
+.img-surf {
     width: 100%;
     height: auto;
     object-fit: cover;
     border-radius: 20px;
 }
 
+.hourly-forecast {
+    padding: 60px 0;
+    background-color: var(--surf-white); 
+}
+
+.chart-card {
+    background: var(--surf-white);
+    padding: 30px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border: 2px solid var(--surf-navy);
+}
+
+.chart-title {
+    font-family: var(--font-family);
+    font-weight: 700;
+    margin-bottom: 25px;
+    color: var(--surf-black);
+}
+
+.chart-container {
+    height: 400px;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.best-window-box {
+    margin-top: 5px;
+    border: 2px solid var(--surf-navy); 
+    text-align: left;
+}
+
+.best-window-box p {
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin: 10px;
+}
+
+#best-time-window {
+    color: var(--surf-navy);
+}
+
+.tide-forecast {
+    padding: 40px 0;
+}
+
+.tide-info-box {
+    border: 2px solid var(--surf-navy);
+    padding: 20px;
+    margin-bottom: 5px;
+    line-height: 1.8;
+}
+
+.tide-info-box p {
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.high-tide {
+    color: #ff0000;
+    font-weight: 700;
+}
+
+.low-tide {
+    color: #0000ff; 
+    font-weight: 700;
+}
+
+.high-tide-countdown {
+    color: #ff0000;
+    font-weight: 700;
+}
+
+.low-tide-countdown {
+    color: #003087;
+    font-weight: 700;
+}
+
+#high-h, #high-m, #high-s, #low-h, #low-m, #low-s {
+    font-variant-numeric: tabular-nums; /* Keeps numbers from jumping around while counting */
+}
+
+.condition-summary {
+    padding: 30px 0;
+    background: linear-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.8)), url('assets/bagasbas.svg'); 
+    background-size: cover;
+}
+
+.summary-card {
+    background: var(--surf-white);
+    padding: 25px;
+    border-radius: 15px;
+    border-left: 5px solid var(--surf-navy); 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.location-title {
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 8px 20px;
+    border-radius: 50px;
+    background-color:var(--surf-navy);
+    color: var(--surf-white);
+    font-weight: 700;
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+}
+
+.summary-text {
+    font-weight: 500;
+    color: #555;
+}
+
+.detail-item {
+    padding: 20px;
+    background-color: #fcfcfc;
+    border-radius: 12px;
+    border: 1px solid var(--surf-border);
+    transition: transform 0.3s ease;
+}
+
+.detail-item:hover {
+    transform: translateY(-5px);
+    border-color: var(--surf-navy);
+}
+
+.detail-label {
+    font-size: 0.85rem;
+    color: var(--surf-black);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 5px;
+}
+
+.detail-item i {
+    color: var(--surf-navy); 
+}
+
+.intro-content, .reports-preview, .condition-summary, .trainer-img-wrapper {
+    position: relative;
+}
+
+.photo-credit-btn {
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
+    background: rgba(0, 48, 135, 0.4); 
+    color: white;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    z-index: 10;
+}
+
+.photo-credit-btn:hover {
+    background: rgba(0, 48, 135, 0.8);
+    color: #fff;
+    transform: scale(1.1);
+}
+
+.photo-credit-btn i {
+    font-size: 0.9rem;
+}
 
 /* RESPONSIVENESS */
 @media (max-width: 992px) {
