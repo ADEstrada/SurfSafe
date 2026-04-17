@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+    <head>
+
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Signup Form</title>
+
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="style.css">
+
+    </head>
+
+    <body>
+
+        <div class="main-content">
+            <div class="signup-card">
+                
+                <div class="logo-wrapper">
+                    <img src="assets/logo.svg" alt="SurfSafe Logo">
+                </div>
+
+                <h2 class="introTagline">Join the Community!</h2>
+
+                <!-- ROLE SELECTOR -->
+                <div class="role-container">
+                <span class="role-label">I am a:</span>
+                <div class="type-selector">
+                    <button type="button" class="type-btn active" onclick="setRole('Tourist', this)">Tourist</button>
+                    <button type="button" class="type-btn" onclick="setRole('Trainer', this)">Trainer</button>
+                </div>
+            </div>
+
+                <form id="signupForm">
+                
+                    <!-- FIRST NAME AND LAST NAME FORM -->
+                    <div class="name-row">
+                        <div class="form-group">
+                            <label for="firstName" class="form-label">First Name</label>
+                            <input type="text" class="form-control" id="firstName" placeholder="Jane" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="lastName" class="form-label">Last Name</label>
+                            <input type="text" class="form-control" id="lastName" placeholder="Doe" required>
+                        </div>
+                    </div>
+
+                    <!-- EMAIL FORM -->
+                    <div class="form-group">
+                        <label for="email" class="form-label">Email Address</label>
+                        <input type="email" class="form-control" id="email" placeholder="name@company.com" required>
+                    </div>
+
+                    <!-- PASSWORD FORM -->
+                    <div class="form-group">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" placeholder="••••••••" required>
+                    </div>
+
+                    <div class="form-group confirm-password" id="confirmPasswordField">
+                        <label for="confirm-password" class="form-label">Confirm Password</label>
+                        <input type="password" class="form-control" id="confirm-password" placeholder="••••••••" required>
+                    </div>
+
+                     <button type="submit" class="signupBtn">Sign Up</button>
+
+                </form>
+
+                <div class="login-link">Already Have Account? <a href="login.html">Log In</a>
+            </div>
+
+            </div>
+        </div>
+
+    </body>
+
+    <script src="script.js"></script>
+
+</html>

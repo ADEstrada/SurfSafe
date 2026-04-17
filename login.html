@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+    <head>
+
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Login Form</title>
+
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="style.css">
+
+    </head>
+
+    <body>
+
+        <div class="main-content">
+            <div class="login-card">
+                
+                <div class="logo-wrapper">
+                    <img src="assets/logo.svg" alt="SurfSafe Logo">
+                </div>
+
+                <h2 class="introTagline">Welcome Back!</h2>
+
+                <form>
+
+                    <!-- EMAIL FORM -->
+                    <div class="form-group">
+                        <label for="email" class="form-label">Email Address</label>
+                        <input type="email" class="form-control" id="email" placeholder="name@company.com" required>
+                    </div>
+                    
+                    <!-- PASSWORD FORM -->
+                    <div class="form-group">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" placeholder="••••••••" required>
+                    </div>
+
+                    <!--REMEMBER ME AND FORGOT PASSWORD -->
+                    <div class="form-options">
+                        <label class="remember-me"><input type="checkbox"> Remember me</label>
+                        <a href="#" class="forgot-pass">Forgot Password?</a>
+                    </div>
+
+                    <button type="submit" class="loginBtn">Log In</button>
+            
+                </form>
+
+                <div class="signup-link">Don't Have Account? <a href="signup.html">Sign Up</a></div>
+
+            </div>
+        </div>
+
+    </body>
+
+    <script src="script.js"></script>
+
+</html>
