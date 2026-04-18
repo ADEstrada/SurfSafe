@@ -36,6 +36,8 @@
                         <a href="hazard_map.html">Hazard Map</a>
                         <a href="report.html">Report</a>
                         <a href="about.html">About</a>
+                        <a href="trainers.html" id="nav-book-trainer" class="d-none">Trainers</a>
+                        <a href="my_bookings.html" id="nav-my-bookings" class="d-none">My Bookings</a>
                     </nav>
 
                     <div class="auth-buttons">
@@ -74,6 +76,7 @@
                 </div>
             </section>
 
+            <!-- 7 DAY FORECAST SECTION -->
             <section class="marine-data-preview">
                 <div class="container text-center">
                     
@@ -83,142 +86,31 @@
                         <p class="section-subtitle">Plan your surfing sessions ahead with our weekly sea state predictions.</p>
                     </div>
 
-                    <div class="forecast-wrapper d-flex justify-content-center flex-wrap">
-                        
-                        <div class="forecast-card" data-day="1">
-                            <h5 class="day-name">MON</h5>
-                            <div class="data-group">
-                                <i class="bi bi-water"></i>
-                                <span class="data-value"><span id="wave-mon">--</span>m</span>
-                                <span class="data-label">WAVE</span>
-                            </div>
-                            <div class="data-group">
-                                <i class="bi bi-wind"></i>
-                                <span class="data-value"><span id="wind-mon">--</span>kph</span>
-                                <span class="data-label">WIND</span>
-                            </div>
-                            <div class="data-group">
-                                <i class="bi bi-arrow-down-up"></i>
-                                <span class="data-value" id="tide-mon">--</span>
-                                <span class="data-label">TIDE</span>
-                            </div>
-                        </div>
+                    <div class="forecast-wrapper d-flex justify-content-center flex-wrap" id="forecastContainer"></div>
 
-                        <div class="forecast-card" data-day="2">
-                            <h5 class="day-name">TUE</h5>
-                            <div class="data-group">
-                                <i class="bi bi-water"></i>
-                                <span class="data-value"><span id="wave-tue">--</span>m</span>
-                                <span class="data-label">WAVE</span>
-                            </div>
-                            <div class="data-group">
-                                <i class="bi bi-wind"></i>
-                                <span class="data-value"><span id="wind-tue">--</span>kph</span>
-                                <span class="data-label">WIND</span>
-                            </div>
-                            <div class="data-group">
-                                <i class="bi bi-arrow-down-up"></i>
-                                <span class="data-value" id="tide-tue">--</span>
-                                <span class="data-label">TIDE</span>
-                            </div>
-                        </div>
+                        <template id="forecastCardTemplate">
+                            <div class="forecast-card">
+                                <h5 class="day-name"></h5>
+                                
+                                <div class="data-group">
+                                    <i class="bi bi-water"></i>
+                                    <span class="data-value"><span class="wave-val">--</span>m</span>
+                                    <span class="data-label">WAVE</span>
+                                </div>
 
-                        <div class="forecast-card" data-day="3">
-                            <h5 class="day-name">WED</h5>
-                            <div class="data-group">
-                                <i class="bi bi-water"></i>
-                                <span class="data-value"><span id="wave-wed">--</span>m</span>
-                                <span class="data-label">WAVE</span>
-                            </div>
-                            <div class="data-group">
-                                <i class="bi bi-wind"></i>
-                                <span class="data-value"><span id="wind-wed">--</span>kph</span>
-                                <span class="data-label">WIND</span>
-                            </div>
-                            <div class="data-group">
-                                <i class="bi bi-arrow-down-up"></i>
-                                <span class="data-value" id="tide-wed">--</span>
-                                <span class="data-label">TIDE</span>
-                            </div>
-                        </div>
+                                <div class="data-group">
+                                    <i class="bi bi-wind"></i>
+                                    <span class="data-value"><span class="wind-val">--</span>kph</span>
+                                    <span class="data-label">WIND</span>
+                                </div>
 
-                        <div class="forecast-card" data-day="4">
-                            <h5 class="day-name">THURS</h5>
-                            <div class="data-group">
-                                <i class="bi bi-water"></i>
-                                <span class="data-value"><span id="wave-thurs">--</span>m</span>
-                                <span class="data-label">WAVE</span>
+                                <div class="data-group">
+                                    <i class="bi bi-arrow-down-up"></i>
+                                    <span class="data-value tide-val">--</span>
+                                    <span class="data-label">TIDE</span>
+                                </div>
                             </div>
-                            <div class="data-group">
-                                <i class="bi bi-wind"></i>
-                                <span class="data-value"><span id="wind-thurs">--</span>kph</span>
-                                <span class="data-label">WIND</span>
-                            </div>
-                            <div class="data-group">
-                                <i class="bi bi-arrow-down-up"></i>
-                                <span class="data-value" id="tide-thurs">--</span>
-                                <span class="data-label">TIDE</span>
-                            </div>
-                        </div>
-
-                        <div class="forecast-card" data-day="5">
-                            <h5 class="day-name">FRI</h5>
-                            <div class="data-group">
-                                <i class="bi bi-water"></i>
-                                <span class="data-value"><span id="wave-fri">--</span>m</span>
-                                <span class="data-label">WAVE</span>
-                            </div>
-                            <div class="data-group">
-                                <i class="bi bi-wind"></i>
-                                <span class="data-value"><span id="wind-fri">--</span>kph</span>
-                                <span class="data-label">WIND</span>
-                            </div>
-                            <div class="data-group">
-                                <i class="bi bi-arrow-down-up"></i>
-                                <span class="data-value" id="tide-fri">--</span>
-                                <span class="data-label">TIDE</span>
-                            </div>
-                        </div>
-
-                        <div class="forecast-card" data-day="6">
-                            <h5 class="day-name">SAT</h5>
-                            <div class="data-group">
-                                <i class="bi bi-water"></i>
-                                <span class="data-value"><span id="wave-sat">--</span>m</span>
-                                <span class="data-label">WAVE</span>
-                            </div>
-                            <div class="data-group">
-                                <i class="bi bi-wind"></i>
-                                <span class="data-value"><span id="wind-sat">--</span>kph</span>
-                                <span class="data-label">WIND</span>
-                            </div>
-                            <div class="data-group">
-                                <i class="bi bi-arrow-down-up"></i>
-                                <span class="data-value" id="tide-sat">--</span>
-                                <span class="data-label">TIDE</span>
-                            </div>
-                        </div>
-
-                        <div class="forecast-card" data-day="0">
-                            <h5 class="day-name">SUN</h5>
-                            <div class="data-group">
-                                <i class="bi bi-water"></i>
-                                <span class="data-value"><span id="wave-sun">--</span>m</span>
-                                <span class="data-label">WAVE</span>
-                            </div>
-                            <div class="data-group">
-                                <i class="bi bi-wind"></i>
-                                <span class="data-value"><span id="wind-sun">--</span>kph</span>
-                                <span class="data-label">WIND</span>
-                            </div>
-                            <div class="data-group">
-                                <i class="bi bi-arrow-down-up"></i>
-                                <span class="data-value" id="tide-sun">--</span>
-                                <span class="data-label">TIDE</span>
-                            </div>
-                        </div>
-
-                    </div>
+                        </template>
 
                     </div>
             </section>

@@ -1,4 +1,17 @@
- // ROLE SELECTION - signup.html
+/* BACKEND AND LEAD ARCHITECT INSTRUCTION:
+        THROUGHOUT THE SCRIPT, I HAVE COMMENTS FOR YOU. PLEASE READ AND MAKE SURE THAT THAT'S THE ONLY THING THAT WILL BE CHANGE/ADDED
+        BECAUSE MOST OF THE SCRIPTS ARE RELATED TO UI AND ITS FUNCTIONALITY.
+
+        *IF DONE, PLEASE REMOVE THE COMMENT I MADE FOR YOU.
+
+        *IN ANY CASE, THAT SOME NEEDS TO BE CHANGED BUT I DON'T HAVE COMMENT FOR IT, PLEASE INFORM ME.
+
+        *DONT REMOVE COMMENTS THAT ARE NOT FOR YOU.
+*/
+
+// ROLE SELECTION - signup.html
+let selectedRole = 'Tourist'; // BACKEND DEVELOPER: REPLACE THIS WITH USER STATE FROM DATABASE
+
 function setRole(role, btn) {
     selectedRole = role; 
 
@@ -26,22 +39,56 @@ function setRole(role, btn) {
     }
 }
 
-// ACTIVE FORECAST CARD - index.html
-const today = new Date().getDay();
+// 7-DAY FORECAST - index.html and marine_data.html
+function generateForecastCards() {
 
-document.querySelectorAll('.forecast-card').forEach(card => {
-    card.classList.remove('active');
+    /* LEAD ARCHITECT:  
+            1. INTEGRATE API HERE
+            2. SWELL, WIND, AND TIDE ARE CONNECTED TO IDs:  #wave-{day}, #wind-{day}, #tide-{day}
+    */
+   
+    const container = document.getElementById('forecastContainer');
+    const template = document.getElementById('forecastCardTemplate');
     
-    if(parseInt(card.getAttribute('data-day')) === today) {
-        card.classList.add('active');
-    }
-});
+    if (!container || !template) return;
 
+    const days = ['SUN', 'MON', 'TUE', 'WED', 'THURS', 'FRI', 'SAT'];
+    const today = new Date().getDay();
+
+    container.innerHTML = '';
+
+    for (let i = 0; i < 7; i++) {
+        const clone = template.content.cloneNode(true);
+        const card = clone.querySelector('.forecast-card');
+  
+        const dayIndex = (i + 1) % 7; 
+        
+        card.setAttribute('data-day', dayIndex);
+        card.querySelector('.day-name').innerText = days[dayIndex];
+        
+        const lowerDay = days[dayIndex].toLowerCase();
+        card.querySelector('.wave-val').id = `wave-${lowerDay}`;
+        card.querySelector('.wind-val').id = `wind-${lowerDay}`;
+        card.querySelector('.tide-val').id = `tide-${lowerDay}`;
+
+        if (dayIndex === today) {
+            card.classList.add('active');
+        }
+
+        container.appendChild(clone);
+    }
+}
 
 // HOURLY WAVE HEIGHT GRAPH - marine_data.html (NEEDS API)
 let myWaveChart;
 
 function setupWaveChart() {
+
+    /* LEAD ARCHITECT: 
+            1. INTEGRATE API HERE
+            2. UPDATE "labels" WITH HOURLY TIMESTAMPS
+            3. UPDATE "datasets" WITH WAVE_HEIGHT_MAX VALUES
+    */
     const ctx = document.getElementById('waveChart').getContext('2d');
     
     myWaveChart = new Chart(ctx, {
@@ -80,6 +127,12 @@ function setupWaveChart() {
 let myTideChart;
 
 function setupTideChart() {
+
+    /* LEAD ARCHITECT: 
+            1. INTEGRATE API HERE
+            2. MAP HIGH/LOW TIDE PREDICTIONS TO "datasets[0] and [1]"
+    */
+
     const ctxTide = document.getElementById('tideChart').getContext('2d');
     
     myTideChart = new Chart(ctxTide, {
@@ -124,8 +177,9 @@ function setupTideChart() {
 // LIVE DATE - marine_data.html
 function displayLiveDate() {
     const dateElement = document.getElementById('live-date');
-    const now = new Date();
+    if (!dateElement) return; 
 
+    const now = new Date();
     const options = { 
         weekday: 'long', 
         year: 'numeric', 
@@ -136,7 +190,7 @@ function displayLiveDate() {
     dateElement.innerText = now.toLocaleDateString('en-US', options);
 }
 
-// CREDITS
+// CREDITS - FOR PHOTOS
 document.addEventListener('DOMContentLoaded', function () {
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
     var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
@@ -144,10 +198,33 @@ document.addEventListener('DOMContentLoaded', function () {
     })
 });
 
+// FRONTEND LOGIC ONLY: HANDLES UI STATE FOR THE DEMO
+// BACKEND DEVELOPER: REPLACE LOCALSTORAGE WITH BACKEND AUTHENTICATION
+function updateNavbarBasedOnRole() {
+    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+    const userRole = localStorage.getItem('userRole'); 
+
+    const bookTrainerLink = document.getElementById('nav-book-trainer');
+    const myBookingsLink = document.getElementById('nav-my-bookings');
+
+    if (isLoggedIn) {
+        if (userRole === 'Tourist' && bookTrainerLink) {
+            bookTrainerLink.classList.remove('d-none');
+        } else if (userRole === 'Trainer' && myBookingsLink) {
+            myBookingsLink.classList.remove('d-none');
+        }
+    }
+}
+// END OF FRONTEND LOGIC FOR DEMO
+
 document.addEventListener('DOMContentLoaded', () => {
+    generateForecastCards();
     displayLiveDate();
-    // setupWaveChart(); 
-    // setupTideChart();
+    
+    if (document.getElementById('waveChart')) setupWaveChart(); 
+    if (document.getElementById('tideChart')) setupTideChart();
+
+    updateNavbarBasedOnRole();
 
     // DATA PRIVACY ACT AND TERM AND CONDITION TAB SWITCHING
     const termsModal = document.getElementById('termsModal');
@@ -167,4 +244,35 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    // FOR THE SIGN UP REQUIRED POPUP
+    const trainerButtons = document.querySelectorAll('.btn-trainer, .btn-see-trainers');
+    
+    // BACKEND DEVELOPER: REPLACE LOCALSTORAGE
+    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+
+    trainerButtons.forEach(button => {
+        button.addEventListener('click', (e) => {
+            if (!isLoggedIn) {
+                e.preventDefault(); 
+                
+                const authModal = new bootstrap.Modal(document.getElementById('authNudgeModal'));
+                authModal.show();
+            }
+        });
+    });
+
+    // FRONTEND LOGIC ONLY: HANDLES UI STATE FOR THE DEMO
+    // BACKEND/LEAD ARCHITECT: REPLACE LOCALSTORAGE 
+    const signupForm = document.getElementById('signupForm'); 
+    if (signupForm) {
+        signupForm.addEventListener('submit', (e) => {
+            e.preventDefault(); 
+            localStorage.setItem('isLoggedIn', 'true');
+            localStorage.setItem('userRole', selectedRole); 
+            window.location.href = "index.html"; 
+        });
+    }
+
 });
+

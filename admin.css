@@ -1,0 +1,312 @@
+:root {
+    --surf-navy: #00167A;
+    --surf-lightblue: #EBF3FF;
+    --surf-white: #FFFFFF;
+    --surf-black: #000000;
+    --surf-border: #e0e0e0;
+    --surf-gray: #F3F3F3;
+    --surf-grayish: #666;
+
+    --font-family: 'Poppins', sans-serif;
+    --sidebar-width: 260px;
+}
+
+body {
+    background-color: var(--bg-light);
+    color: var(--text-dark);
+}
+
+
+.sidebar {
+    width: var(--sidebar-width);
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    background-color: var(--surf-white);
+    border-right: 1px solid var(--surf-border);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-header {
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+}
+
+.sidebar-logo {
+    width: 130px;
+    height: auto;
+}
+
+
+.sidebar .nav-pills .nav-link {
+    color: var(--surf-grayish);
+    padding: 1rem 1.5rem;
+    border-radius: 0;
+    border-left: 5px solid transparent;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.sidebar .nav-pills .nav-link:hover {
+    background-color: var(--surf-gray);
+    color: var(--surf-navy);
+}
+
+.sidebar .nav-pills .nav-link.active {
+    background-color: var(--surf-lightblue);
+    color: var(--surf-navy);
+    border-left: 5px solid var(--surf-navy);
+}
+
+.nav-link i {
+    margin-right: 12px;
+    font-size: 1.1rem;
+}
+
+
+.main-content {
+    margin-left: var(--sidebar-width);
+    padding: 3rem;
+}
+
+.admin-tab-content {
+    display: none; 
+}
+
+.admin-tab-content.show-section {
+    display: block !important;
+}
+
+
+.btn-exit-admin  {
+    background-color: var(--surf-navy);
+    color: var(--surf-white);
+    width: 100%;
+    padding: 10px;
+    border-radius: 10px;
+    border: none;
+    font-weight: 400;
+    font-size: 14px;
+    margin-top: 10px;
+    cursor: pointer;
+    margin-bottom: 15px;
+}
+
+
+.stat-card {
+    border-radius: 12px;
+}
+
+.is-restricted {
+    opacity: 0.4;
+    pointer-events: none;
+    cursor: not-allowed;
+    filter: grayscale(1);
+}
+
+.search-container {
+    position: relative;
+    width: 350px;
+}
+
+.search-container i {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--surf-grayish);
+}
+
+.search-input {
+    padding: 10px 15px 10px 45px !important;
+    border-radius: 50px !important;
+    background-color: var(--surf-gray) !important;
+    border: none !important;
+    font-size: 14px;
+}
+
+.stat-card.blue-tint {
+    background-color: var(--surf-lightblue);
+    min-height: 160px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.stat-card h1 {
+    color: var(--surf-navy);
+    font-size: 3rem;
+    margin: 5px 0;
+}
+
+.calendar-nav {
+    background-color: var(--surf-gray);
+    border-radius: 10px;
+    padding: 5px 15px;
+    font-size: 13px;
+    color: var(--surf-navy);
+    cursor: pointer;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 12px;
+    margin-top: 20px;
+    margin-bottom: 4rem !important;
+}
+
+.grid-header {
+    text-align: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--surf-navy);
+    letter-spacing: 0.5px;
+    padding-bottom: 10px;
+}
+
+.day-card {
+    background: var(--surf-white);
+    border-radius: 15px;
+    padding: 15px;
+    min-height: 130px;
+    border: 1px solid var(--surf-border);
+    font-weight: 600;
+    color: var(--surf-grayish);
+    position: relative;
+    transition: transform 0.2s ease;
+}
+
+.day-card.active-day {
+    border: 2px solid var(--surf-navy);
+    color: var(--surf-navy);
+}
+
+.day-card.active-day::after {
+    content: '';
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 8px;
+    height: 8px;
+    background-color: var(--surf-navy);
+    border-radius: 50%;
+}
+
+.day-card.empty {
+    background-color: var(--surf-gray);
+    border: none;
+    color: var(--surf-grayish);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.badge-mini {
+    display: block;
+    font-size: 11px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    margin-top: 8px;
+    width: 100%;
+    font-weight: 700;
+}
+
+.badge-mini.blue { background-color: #DDE7FF; color: var(--surf-navy); }
+.badge-mini.green { background-color: #E2F6E9; color: #2D6A4F; }
+.badge-mini.red { background-color: #FFECEC; color: #A4161A; }
+
+.day-card {
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.day-card:hover {
+    background-color: var(--surf-lightblue);
+    transform: translateY(-3px);
+    border-color: var(--surf-navy);
+}
+
+.modal-content {
+    border-radius: 20px;
+}
+
+.form-label {
+    color: var(--surf-navy);
+}
+
+.verification-card {
+    border-radius: 15px;
+    border: 1px solid var(--surf-border);
+    margin-bottom: 1rem;
+    transition: all 0.2s ease;
+}
+
+.verification-card:hover {
+    border-color: var(--surf-navy);
+}
+
+.doc-group {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-doc-pill {
+    background-color: var(--surf-gray);
+    color: var(--surf-navy);
+    border: 1px solid var(--surf-border);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.btn-doc-pill:hover {
+    background-color: var(--surf-navy);
+    color: var(--surf-white);
+    border-color: var(--surf-navy);
+}
+
+.modal-title {
+    color: var(--surf-navy);
+}
+
+.modal-input {
+    border-radius: 10px !important;
+}
+
+.modal-alert {
+    background-color: var(--surf-lightblue) !important;
+    border-radius: 10px !important;
+    color: var(--surf-navy) !important;
+    font-size: 11px;
+}
+
+.btn-approve {
+    background-color: #198754;
+    color: var(--surf-white);
+    border: none;
+    padding: 6px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.btn-reject {
+    background-color: var(--surf-white);
+    color: #dc3545;
+    border: 1px solid #dc3545;
+    padding: 6px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    margin-left: 5px;
+}
