@@ -219,6 +219,67 @@ function updateNavbarBasedOnRole() {
 }
 // END OF FRONTEND LOGIC FOR DEMO
 
+// REPORTS - report.html
+function renderReports() {
+    const container = document.getElementById('reports-list');
+    if (!container) return; 
+    
+    if (typeof reportsData === 'undefined' || !reportsData || reportsData.length === 0) {
+        container.innerHTML = `
+            <div class="no-reports-container">
+                <i class="bi bi-shield-check no-reports-icon"></i>
+                <h4 style="color: var(--surf-navy); font-weight: 700;">All Clear!</h4>
+                <p class="text-muted">There are no hazards reported at Bagasbas Beach today.</p>
+            </div>
+        `;
+        return; 
+    }
+    
+    container.innerHTML = reportsData.map(report => {
+        const isDangerous = report.status.toLowerCase() === 'dangerous';
+        const accentColor = isDangerous ? '#ff311f' : '#ffc107';
+        const badgeClass = isDangerous ? 'bg-danger' : 'bg-warning text-dark';
+
+        return `
+            <div class="report-entry shadow-sm">
+                <div class="status-indicator" style="background-color: ${accentColor}"></div>
+                <div class="entry-body">
+                    <div class="row g-0 align-items-start">
+                        
+                        <div class="col-md-8 pe-3">
+                            <span class="badge rounded-pill status-badge ${badgeClass} d-inline-block">
+                                ${report.status}
+                            </span>
+                            <p class="entry-description">${report.description}</p>
+                            <div class="location-text">
+                                <i class="bi bi-geo-alt-fill me-1"></i>${report.reported_at}
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 data-box mt-3 mt-md-0">
+                            <div class="row g-2">
+                                <div class="col-6 col-md-12 data-item">
+                                    <label>Hazard Type</label>
+                                    <span>${report.hazard_type}</span>
+                                </div>
+                                <div class="col-6 col-md-12 data-item">
+                                    <label>Coordinates</label>
+                                    <span>${report.latitude}, ${report.longitude}</span>
+                                </div>
+                                <div class="col-12 data-item">
+                                    <label>Reported By</label>
+                                    <span>${report.reporter}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     generateForecastCards();
     displayLiveDate();
@@ -276,5 +337,38 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // FOR REPORTS LIST
+    if (document.getElementById('reports-list')) renderReports();
+
 });
 
+// DUMMY DATA FOR REPORTS - BACKEND: Replace this with data from your database/API
+const reportsData = [
+    {
+        status: 'Dangerous',
+        description: 'Strong rip currents detected near the main tower. Swimmers are advised to stay in the shallow areas.',
+        reported_at: 'Central Bagasbas Beach',
+        hazard_type: 'Rip Current',
+        latitude: '14.1332° N',
+        longitude: '122.9861° E',
+        reporter: 'Admin_SurfSafe'
+    },
+    {
+        status: 'Warning',
+        description: 'Minor jellyfish sightings reported by local surfers near the north reef. Wear protective rash guards.',
+        reported_at: 'North Surf Point',
+        hazard_type: 'Marine Life',
+        latitude: '14.1350° N',
+        longitude: '122.9875° E',
+        reporter: 'Trainer_Jhon'
+    },
+    {
+        status: 'Warning',
+        description: 'Floating debris and driftwood sighted after the heavy rain last night. Please be careful when paddling out.',
+        reported_at: 'South Beach Area',
+        hazard_type: 'Debris',
+        latitude: '14.1315° N',
+        longitude: '122.9850° E',
+        reporter: 'Local_Patrol'
+    }
+];

@@ -11,12 +11,20 @@
     --sidebar-width: 260px;
 }
 
+/* --- GENERAL STYLES --- */
 body {
-    background-color: var(--bg-light);
-    color: var(--text-dark);
+    background-color: var(--surf-white);
+    color: var(--surf-black);
+    font-family: var(--font-family);
+    margin: 0;
 }
 
+.main-content {
+    margin-left: var(--sidebar-width);
+    padding: 3rem;
+}
 
+/* --- SIDEBAR SECTION --- */
 .sidebar {
     width: var(--sidebar-width);
     height: 100vh;
@@ -39,7 +47,6 @@ body {
     width: 130px;
     height: auto;
 }
-
 
 .sidebar .nav-pills .nav-link {
     color: var(--surf-grayish);
@@ -66,22 +73,7 @@ body {
     font-size: 1.1rem;
 }
 
-
-.main-content {
-    margin-left: var(--sidebar-width);
-    padding: 3rem;
-}
-
-.admin-tab-content {
-    display: none; 
-}
-
-.admin-tab-content.show-section {
-    display: block !important;
-}
-
-
-.btn-exit-admin  {
+.btn-exit-admin {
     background-color: var(--surf-navy);
     color: var(--surf-white);
     width: 100%;
@@ -93,18 +85,37 @@ body {
     margin-top: 10px;
     cursor: pointer;
     margin-bottom: 15px;
+    text-align: center;
+    text-decoration: none;
+    display: block;
 }
 
+/* --- TAB NAVIGATION LOGIC --- */
+.admin-tab-content {
+    display: none; 
+}
 
+.admin-tab-content.show-section {
+    display: block !important;
+}
+
+/* --- REUSABLE COMPONENTS (CARDS & SEARCH) --- */
 .stat-card {
     border-radius: 12px;
+    min-height: 160px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
-.is-restricted {
-    opacity: 0.4;
-    pointer-events: none;
-    cursor: not-allowed;
-    filter: grayscale(1);
+.stat-card.blue-tint {
+    background-color: var(--surf-lightblue) !important;
+}
+
+.stat-card h1 {
+    color: var(--surf-navy);
+    font-size: 3rem;
+    margin: 5px 0;
 }
 
 .search-container {
@@ -128,20 +139,37 @@ body {
     font-size: 14px;
 }
 
-.stat-card.blue-tint {
-    background-color: var(--surf-lightblue);
-    min-height: 160px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+/* --- DASHBOARD TAB --- */
+.current-status-banner {
+    background-color: var(--surf-navy);
+    border-radius: 12px;
 }
 
-.stat-card h1 {
-    color: var(--surf-navy);
-    font-size: 3rem;
-    margin: 5px 0;
+#status-badge {
+    font-size: 0.75rem;
 }
 
+.surf-condition-label {
+    font-size: 0.7rem; 
+    letter-spacing: 1px;
+}
+
+.status-progress-container {
+    height: 6px; 
+    background-color: var(--surf-navy);
+    filter: brightness(1.5); /* contrast against navy bg */
+}
+
+#status-progress-bar {
+    width: 0%; 
+    background-color: #adb5bd;
+}
+
+.status-description-text {
+    letter-spacing: 0.5px;
+}
+
+/* --- TRAINERS TAB (CALENDAR & APPROVALS) --- */
 .calendar-nav {
     background-color: var(--surf-gray);
     border-radius: 10px;
@@ -159,15 +187,6 @@ body {
     margin-bottom: 4rem !important;
 }
 
-.grid-header {
-    text-align: center;
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--surf-navy);
-    letter-spacing: 0.5px;
-    padding-bottom: 10px;
-}
-
 .day-card {
     background: var(--surf-white);
     border-radius: 15px;
@@ -177,7 +196,14 @@ body {
     font-weight: 600;
     color: var(--surf-grayish);
     position: relative;
-    transition: transform 0.2s ease;
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+}
+
+.day-card:hover {
+    background-color: var(--surf-lightblue);
+    transform: translateY(-3px);
+    border-color: var(--surf-navy);
 }
 
 .day-card.active-day {
@@ -199,7 +225,6 @@ body {
 .day-card.empty {
     background-color: var(--surf-gray);
     border: none;
-    color: var(--surf-grayish);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -207,55 +232,90 @@ body {
     text-align: center;
 }
 
-.badge-mini {
-    display: block;
-    font-size: 11px;
-    padding: 4px 8px;
-    border-radius: 6px;
-    margin-top: 8px;
-    width: 100%;
-    font-weight: 700;
+.verification-card {
+    background-color: #ffffff;
+    border-radius: 20px !important; 
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    border: 1px solid #e9ecef; 
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important; 
+    transition: transform 0.2s ease;
 }
 
-.badge-mini.blue { background-color: #DDE7FF; color: var(--surf-navy); }
-.badge-mini.green { background-color: #E2F6E9; color: #2D6A4F; }
-.badge-mini.red { background-color: #FFECEC; color: #A4161A; }
-
-.day-card {
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
+.verification-card:hover {
+    transform: translateY(-2px); 
+     border: 1px solid var(--surf-navy); 
 }
 
-.day-card:hover {
-    background-color: var(--surf-lightblue);
-    transform: translateY(-3px);
-    border-color: var(--surf-navy);
+.current-status-banner {
+    border-radius: 20px !important; 
+    padding: 2rem;
+    box-shadow: 0 8px 24px rgba(0, 22, 122, 0.15);
 }
 
+/* --- REPORTS TAB (VERIFICATION QUEUE) --- */
+.verification-item {
+    border-left: 5px solid transparent !important;
+    transition: all 0.2s ease;
+}
+
+.verification-item:hover {
+    background-color: #f8fbff !important;
+    border-color: #e0e0e0 !important;
+}
+
+.verification-item.active {
+    border-left: 5px solid var(--surf-navy) !important; 
+    background-color: #f0f7ff !important;
+}
+
+.report-detail-viewer {
+    border: 1px solid var(--surf-border);
+    background-color: var(--surf-white);
+    border-radius: 0.5rem;
+    padding: 3rem;
+    min-height: 500px;
+}
+
+/* --- MODALS & DOCUMENT REVIEW --- */
 .modal-content {
     border-radius: 20px;
 }
 
-.form-label {
-    color: var(--surf-navy);
+.modal-input {
+    border-radius: 10px !important;
 }
 
-.verification-card {
-    border-radius: 15px;
-    border: 1px solid var(--surf-border);
-    margin-bottom: 1rem;
-    transition: all 0.2s ease;
+.modal-alert {
+    background-color: var(--surf-lightblue) !important;
+    border-radius: 10px !important;
+    color: var(--surf-navy) !important;
+    font-size: 11px;
 }
 
-.verification-card:hover {
-    border-color: var(--surf-navy);
-}
-
-.doc-group {
+#documentFrame {
+    height: 500px;
+    overflow-y: auto; 
+    overflow-x: hidden;
+    background-color: #333; 
     display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 8px;
+    flex-direction: column;
+    align-items: center;
+}
+
+#documentFrame::-webkit-scrollbar {
+    width: 10px;
+}
+
+#documentFrame::-webkit-scrollbar-thumb {
+    background: var(--surf-navy);
+    border-radius: 5px;
+}
+
+.scrollable-content img {
+    width: 100%;
+    height: auto;
+    display: block;
 }
 
 .btn-doc-pill {
@@ -275,38 +335,10 @@ body {
     border-color: var(--surf-navy);
 }
 
-.modal-title {
-    color: var(--surf-navy);
-}
-
-.modal-input {
-    border-radius: 10px !important;
-}
-
-.modal-alert {
-    background-color: var(--surf-lightblue) !important;
-    border-radius: 10px !important;
-    color: var(--surf-navy) !important;
-    font-size: 11px;
-}
-
-.btn-approve {
-    background-color: #198754;
-    color: var(--surf-white);
-    border: none;
-    padding: 6px 16px;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 600;
-}
-
-.btn-reject {
-    background-color: var(--surf-white);
-    color: #dc3545;
-    border: 1px solid #dc3545;
-    padding: 6px 16px;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 600;
-    margin-left: 5px;
+/* --- HELPER CLASSES --- */
+.is-restricted {
+    opacity: 0.4;
+    pointer-events: none;
+    cursor: not-allowed;
+    filter: grayscale(1);
 }
