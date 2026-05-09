@@ -202,19 +202,33 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // FRONTEND LOGIC ONLY: HANDLES UI STATE FOR THE DEMO
 // BACKEND DEVELOPER: REPLACE LOCALSTORAGE WITH BACKEND AUTHENTICATION
+
 function updateNavbarBasedOnRole() {
-    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true'; 
     const userRole = localStorage.getItem('userRole'); 
 
-    const bookTrainerLink = document.getElementById('nav-book-trainer');
+    const trainersLink = document.getElementById('nav-book-trainer');
     const myBookingsLink = document.getElementById('nav-my-bookings');
+    const authControls = document.getElementById('auth-controls');
+    const userProfileSection = document.getElementById('user-profile-section');
 
     if (isLoggedIn) {
-        if (userRole === 'Tourist' && bookTrainerLink) {
-            bookTrainerLink.classList.remove('d-none');
-        } else if (userRole === 'Trainer' && myBookingsLink) {
-            myBookingsLink.classList.remove('d-none');
+        authControls?.classList.add('d-none');
+        userProfileSection?.classList.remove('d-none');
+
+        if (userRole === 'Trainer') {
+            trainersLink?.classList.remove('d-none');   
+            myBookingsLink?.classList.remove('d-none');
+        } else if (userRole === 'Tourist') {
+            trainersLink?.classList.remove('d-none');
+            myBookingsLink?.classList.add('d-none');    
         }
+    } else {
+        authControls?.classList.remove('d-none');
+        userProfileSection?.classList.add('d-none');
+        
+        trainersLink?.classList.add('d-none'); 
+        myBookingsLink?.classList.add('d-none');
     }
 }
 // END OF FRONTEND LOGIC FOR DEMO
@@ -280,12 +294,15 @@ function renderReports() {
     }).join('');
 }
 
+
 document.addEventListener('DOMContentLoaded', () => {
-    generateForecastCards();
-    displayLiveDate();
     
-    if (document.getElementById('waveChart')) setupWaveChart(); 
-    if (document.getElementById('tideChart')) setupTideChart();
+    if (document.getElementById('forecastContainer') || document.getElementById('waveChart')) {
+        generateForecastCards();
+        displayLiveDate();
+        if (document.getElementById('waveChart')) setupWaveChart(); 
+        if (document.getElementById('tideChart')) setupTideChart();
+    }
 
     updateNavbarBasedOnRole();
 
@@ -294,17 +311,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (termsModal) {
         termsModal.addEventListener('shown.bs.modal', function (event) {
             const triggerElement = event.relatedTarget; 
-            if (triggerElement && triggerElement.hasAttribute('data-privacy')) {
-                setTimeout(() => {
-                    const privacyTabTrigger = document.getElementById('privacy-tab');
-                    if (privacyTabTrigger) bootstrap.Tab.getOrCreateInstance(privacyTabTrigger).show();
-                }, 10);
-            } else {
-                setTimeout(() => {
-                    const termsTabTrigger = document.getElementById('terms-tab');
-                    if (termsTabTrigger) bootstrap.Tab.getOrCreateInstance(termsTabTrigger).show();
-                }, 10);
-            }
+            const targetTabId = (triggerElement && triggerElement.hasAttribute('data-privacy')) ? 'privacy-tab' : 'terms-tab';
+            setTimeout(() => {
+                const tabTrigger = document.getElementById(targetTabId);
+                if (tabTrigger) bootstrap.Tab.getOrCreateInstance(tabTrigger).show();
+            }, 10);
         });
     }
 
@@ -318,9 +329,11 @@ document.addEventListener('DOMContentLoaded', () => {
         button.addEventListener('click', (e) => {
             if (!isLoggedIn) {
                 e.preventDefault(); 
-                
-                const authModal = new bootstrap.Modal(document.getElementById('authNudgeModal'));
-                authModal.show();
+                const authModalEl = document.getElementById('authNudgeModal');
+                if (authModalEl) {
+                    const authModal = new bootstrap.Modal(authModalEl);
+                    authModal.show();
+                }
             }
         });
     });
@@ -332,7 +345,9 @@ document.addEventListener('DOMContentLoaded', () => {
         signupForm.addEventListener('submit', (e) => {
             e.preventDefault(); 
             localStorage.setItem('isLoggedIn', 'true');
-            localStorage.setItem('userRole', selectedRole); 
+            if (typeof selectedRole !== 'undefined') {
+                localStorage.setItem('userRole', selectedRole); 
+            }
             window.location.href = "index.html"; 
         });
     }
@@ -340,6 +355,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // FOR REPORTS LIST
     if (document.getElementById('reports-list')) renderReports();
 
+    // PROFILE PAGE LOGIC
+    if (document.getElementById('trainerName')) {
+        loadProfileData();
+        setupProfileActions(); 
+    }
+
+    // LOGOUT LOGIC
+    document.getElementById('navLogoutBtn')?.addEventListener('click', () => {
+        localStorage.setItem('isLoggedIn', 'false');
+        window.location.href = 'index.html';
+    });
 });
 
 // DUMMY DATA FOR REPORTS - BACKEND: Replace this with data from your database/API
@@ -372,3 +398,77 @@ const reportsData = [
         reporter: 'Local_Patrol'
     }
 ];
+
+
+const userData = {
+    role: "Trainer", 
+    details: {
+        name: "Coach Jhon Bagasbas",
+        email: "jhon.surf@example.com",
+        phone: "+63 912 345 6789",
+        location: "Bagasbas Beach, Daet",
+        experience: "8 Years Training",
+        specialization: "Shortboard, Longboard",
+        certifications: "ISA Level 1 Certified",
+        bio: "Local surf instructor in Bagasbas with a passion for teaching beginners.",
+        profilePic: "https://via.placeholder.com/150",
+        doc: "ID_Verification.pdf"
+    }
+};
+
+function loadProfileData() {
+    const d = userData.details;
+    const nameEl = document.getElementById('trainerName');
+    if (!nameEl) return; 
+
+    nameEl.innerText = d.name;
+    document.getElementById('trainerEmail').innerText = d.email;
+    document.getElementById('trainerPhone').innerText = d.phone;
+    document.getElementById('trainerExp').innerText = d.experience;
+    
+    document.getElementById('inputEmail').value = d.email;
+    document.getElementById('inputPhone').value = d.phone;
+    document.getElementById('inputExp').value = d.experience;
+    document.getElementById('inputSpecialization').value = d.specialization;
+    document.getElementById('inputCertifications').value = d.certifications;
+    document.getElementById('inputBio').value = d.bio;
+    
+    document.getElementById('displayPic').src = d.profilePic;
+    document.getElementById('docFileName').innerText = d.doc;
+}
+
+// BACKEND DEVELOPER: MAKE SURE THIS UPDATES/SAVES
+function setupProfileActions() {
+    const editBtn = document.getElementById('editToggleBtn');
+    const saveBtn = document.getElementById('saveBtn');
+    
+    if (!editBtn) return;
+
+    editBtn.addEventListener('click', function() {
+        const isEditing = this.innerText === "Cancel";
+        const displayFields = document.querySelectorAll('.display-field');
+        const editFields = document.querySelectorAll('.edit-field');
+        const mainInputs = document.querySelectorAll('.main-input');
+
+        if (isEditing) {
+            this.innerText = "Edit Profile";
+            this.classList.replace('btn-secondary', 'btn-outline-primary');
+            saveBtn.classList.add('d-none');
+            displayFields.forEach(f => f.classList.remove('d-none'));
+            editFields.forEach(f => f.classList.add('d-none'));
+            mainInputs.forEach(i => i.disabled = true);
+        } else {
+            this.innerText = "Cancel";
+            this.classList.replace('btn-outline-primary', 'btn-secondary');
+            saveBtn.classList.remove('d-none');
+            displayFields.forEach(f => f.classList.add('d-none'));
+            editFields.forEach(f => f.classList.remove('d-none'));
+            mainInputs.forEach(i => i.disabled = false);
+        }
+    });
+
+    saveBtn?.addEventListener('click', () => {
+        alert("Changes saved!");
+        location.reload();
+    });
+}
