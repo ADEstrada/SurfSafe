@@ -213,8 +213,8 @@ function updateNavbarBasedOnRole() {
     const userProfileSection = document.getElementById('user-profile-section');
 
     if (isLoggedIn) {
-        authControls?.classList.add('d-none');
-        userProfileSection?.classList.remove('d-none');
+        if (authControls) authControls.classList.add('d-none');
+        if (userProfileSection) userProfileSection.classList.remove('d-none');
 
         if (userRole === 'Trainer') {
             trainersLink?.classList.remove('d-none');   
@@ -294,6 +294,260 @@ function renderReports() {
     }).join('');
 }
 
+// MY BOOKINGS - bookings.html
+function renderBookings() {
+    const statuses = ['upcoming', 'completed', 'cancelled'];
+    
+    statuses.forEach(status => {
+        const listContainer = document.getElementById(`${status}-list`);
+        if (!listContainer) return;
+
+        const filtered = myBookings.filter(b => b.status === status);
+        listContainer.innerHTML = ''; 
+
+        if (filtered.length === 0) {
+            listContainer.innerHTML = `
+                <div class="text-center py-5">
+                    <i class="bi bi-calendar-x fs-1 text-muted"></i>
+                    <p class="text-muted mt-2">No ${status} bookings yet.</p>
+                </div>`;
+            return;
+        }
+
+        // GROUP BY MONTH
+        let currentMonth = "";
+        filtered.forEach(booking => {
+            if (booking.month !== currentMonth) {
+                currentMonth = booking.month;
+                listContainer.innerHTML += `<h6 class="text-muted text-uppercase small fw-bold mb-3 mt-4">${currentMonth}</h6>`;
+            }
+
+            const card = `
+                <div class="booking-card d-flex align-items-center bg-white border rounded shadow-sm mb-3 p-0 overflow-hidden">
+                    <div class="date-badge text-center py-3 px-4 border-end d-flex flex-column justify-content-center" style="min-width: 110px; background-color: #f8fbff;">
+                        <span class="text-uppercase fw-bold small text-muted">${booking.day}</span>
+                        <span class="fs-2 fw-bold lh-1" style="color: #002266;">${booking.num}</span>
+                    </div>
+                    
+                    <div class="flex-grow-1 ps-4">
+                        <h5 class="fw-bold mb-1">${booking.tourist_name}</h5>
+                        <p class="text-muted small mb-0"><i class="bi bi-clock me-2"></i>${booking.time}</p>
+                    </div>
+
+                    <div class="pe-4">
+                        <button class="btn btn-view-details rounded-pill px-4" onclick="showDetails('${booking.id}')">
+                            View Details
+                        </button>
+                    </div>
+                </div>
+            `;
+            listContainer.innerHTML += card;
+        });
+    });
+}
+
+function showDetails(id) {
+    const booking = myBookings.find(b => b.id === id);
+    if (booking) {
+        document.getElementById('detail-name').innerText = booking.tourist_name;
+        document.getElementById('detail-email').innerText = booking.email;
+        document.getElementById('detail-datetime').innerText = `${booking.day}, May ${booking.num} | ${booking.time}`;
+        document.getElementById('detail-location').innerText = booking.location;
+        
+        const myModal = new bootstrap.Modal(document.getElementById('detailsModal'));
+        myModal.show();
+    }
+}
+
+// FOR TRAINERS LIST - trainer.html
+
+let currentTrainerIndex = 0;
+let trainerModal;
+
+// SHOWCASES THE WEEKLY AVAILABILITY
+function getWeeklyStatus(dayAbbreviation, activeDays) {
+    const daysMap = { 'SU': 0, 'M': 1, 'T': 2, 'W': 3, 'TH': 4, 'F': 5, 'S': 6 };
+    const today = new Date().getDay(); 
+    const targetDay = daysMap[dayAbbreviation];
+    
+    if (targetDay < today) return 'past'; 
+    return activeDays.includes(dayAbbreviation) ? 'active' : 'inactive';
+}
+
+// BACKEND DEVELOPER: PLEASE MAKE SURE THAT IN THE IMG CONTAINER, REAL IMAGE WILL BE SHOWN
+function renderTrainers() {
+    const list = document.getElementById('trainers-list');
+    const placeholder = "https://placehold.co/400x500/00167A/FFFFFF?text=SurfSafe+Trainer";
+
+    list.innerHTML = trainersData.map((trainer, index) => `
+        <div class="col-12 col-md-4 mb-4">
+            <div class="trainer-card-fixed shadow-sm" onclick="openTrainerDetails(${index})" style="cursor: pointer;">
+                <div class="trainer-img-container">
+                    <img src="${trainer.image || placeholder}" class="trainer-img-top" alt="${trainer.name}">
+                </div>
+                <div class="p-3 text-center">
+                    <h5 class="trainer-name-text">${trainer.name}</h5>
+                    <div class="availability-row my-2">
+                        ${['M', 'T', 'W', 'TH', 'F', 'S', 'SU'].map(day => {
+                            const isActive = trainer.active_days.includes(day);
+                            return `<span class="day-dot ${isActive ? 'active' : 'inactive'}">${day}</span>`;
+                        }).join('')}
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-3 px-2">
+                        <span class="trainer-rate">Php ${trainer.rate.toLocaleString()}</span>
+                        <button class="btn-book-trainer" onclick="event.stopPropagation(); startBooking(${index})">Book</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+
+function openTrainerDetails(index) {
+    currentTrainerIndex = index;
+    const trainer = trainersData[index];
+    const detailsContainer = document.getElementById('modal-trainer-details');
+
+   document.querySelectorAll('.nav-arrow').forEach(btn => btn.classList.remove('d-none'));
+
+    const expertiseChips = trainer.expertise.map(skill => 
+        `<span class="expertise-chip">${skill}</span>`
+    ).join('');
+
+    detailsContainer.innerHTML = `
+        <div class="row g-0">
+            <div class="col-md-5">
+                <img src="${trainer.image}" class="img-fluid h-100 object-fit-cover" style="border-radius: 20px 0 0 20px; min-height: 400px;">
+            </div>
+            <div class="col-md-7 p-4">
+                <h2 class="fw-bold text-navy mb-3">${trainer.name.toUpperCase()}</h2>
+                
+                <div class="row mb-4">
+                    <div class="col-6">
+                        <small class="text-muted d-block fw-bold">EXPERIENCE</small>
+                        <span class="fw-bold">5+ Years</span>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted d-block fw-bold">RATE</small>
+                        <span class="text-navy fw-bold">${trainer.rate.toLocaleString()} Php</span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <p class="small fw-bold mb-2"><i class="bi bi-info-circle-fill text-navy me-2"></i>About Trainer</p>
+                    <p class="text-muted small">Certified local instructor with over 5 years of experience teaching tourists in Bagasbas. Specialized in building confidence for first-time surfers.</p>
+                </div>
+
+                <div class="mb-4">
+                    <p class="small fw-bold mb-2">Areas of Expertise</p>
+                    <div class="d-flex flex-wrap gap-2">
+                        ${expertiseChips}
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <p class="small fw-bold mb-2"><i class="bi bi-clock-fill text-navy me-2"></i>Weekly Availability</p>
+                    <div class="d-flex gap-2">
+                        ${['M', 'T', 'W', 'TH', 'F', 'S', 'SU'].map(day => {
+                            const isActive = trainer.active_days.includes(day);
+                            const statusClass = isActive ? 'text-success' : 'text-danger';
+                            return `<span class="fw-bold ${statusClass}">${day}</span>`;
+                        }).join('')}
+                    </div>
+                </div>
+                
+                <button class="btn btn-navy w-100 py-2 fw-bold mt-2" onclick="startBooking(${index})">Book</button>
+            </div>
+        </div>
+    `;
+    trainerModal.show();
+}
+
+// BACKEND DEVELOPER/LEAD: PLEASE MAKE SURE SURE THAT THE AVAILABLE DATES AND TIMES THAT WILL BE FETCH HERE IS THE SCHEDULES THAT WERE ASSIGNED BY THE ADMIN
+function startBooking(index) {
+    currentTrainerIndex = index;
+    const trainer = trainersData[index];
+    const detailsContainer = document.getElementById('modal-trainer-details');
+
+    document.querySelectorAll('.nav-arrow').forEach(btn => btn.classList.add('d-none'));
+
+    detailsContainer.innerHTML = `
+        <div class="p-4">
+            <div class="d-flex align-items-center mb-4">
+                <button class="btn btn-sm btn-outline-secondary me-3" onclick="openTrainerDetails(${index})">
+                    <i class="bi bi-arrow-left"></i> 
+                </button>
+                <h4 class="fw-bold text-navy mb-0">Booking for ${trainer.name}</h4>
+            </div>
+            <form id="bookingForm" onsubmit="confirmBooking(event, ${index})">
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Select Date</label>
+                    <input type="date" class="form-control" id="bookDate" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Available Time Slot</label>
+                    <select class="form-select" id="bookTime" disabled required>
+                        <option value="" selected disabled>Select a date first...</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label small fw-bold">Meet-up Location</label>
+                    <select class="form-select" id="bookLocation" required>
+                        <option value="" selected disabled>Select location...</option>
+                        <option value="Bagasbas Lighthouse">Bagasbas Lighthouse</option>
+                        <option value="SurfSafe HQ">SurfSafe HQ</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-navy w-100 py-2 fw-bold">Confirm Booking</button>
+            </form>
+        </div>
+    `;
+
+    const dateInput = document.getElementById('bookDate');
+    const timeSelect = document.getElementById('bookTime');
+
+    dateInput.addEventListener('change', (e) => {
+        const selectedDate = e.target.value; 
+        const slots = trainer.schedules ? trainer.schedules[selectedDate] : null;
+        if (slots) {
+            timeSelect.disabled = false;
+            timeSelect.innerHTML = '<option value="" selected disabled>Choose a slot...</option>' + 
+                slots.map(s => `<option value="${s}">${s}</option>`).join('');
+        } else {
+            timeSelect.disabled = true;
+            timeSelect.innerHTML = '<option value="" selected disabled>No shifts for this date</option>';
+        }
+    });
+    
+    trainerModal.show();
+}
+
+
+function nextTrainer() {
+    if (currentTrainerIndex < trainersData.length - 1) {
+        openTrainerDetails(currentTrainerIndex + 1);
+    }
+}
+
+function prevTrainer() {
+    if (currentTrainerIndex > 0) {
+        openTrainerDetails(currentTrainerIndex - 1);
+    }
+}
+
+// BACKEND DEVELOPER: MAKE SURE THIS WORKS
+function confirmBooking(event, index) {
+    event.preventDefault();
+    const trainer = trainersData[index];
+    const date = document.getElementById('bookDate').value;
+    const time = document.getElementById('bookTime').value;
+    const location = document.getElementById('bookLocation').value;
+
+    alert(`Success! You booked ${trainer.name} on ${date} at ${time}. Meet-up: ${location}`);
+    trainerModal.hide();
+}
+
 
 document.addEventListener('DOMContentLoaded', () => {
     
@@ -334,6 +588,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     const authModal = new bootstrap.Modal(authModalEl);
                     authModal.show();
                 }
+            } else {
+            window.location.href = "trainers.html";
             }
         });
     });
@@ -361,14 +617,63 @@ document.addEventListener('DOMContentLoaded', () => {
         setupProfileActions(); 
     }
 
+     // FOR MY BOOKINGS LIST
+    if (document.getElementById('upcoming-list')) renderBookings();
+
+    // FOR TRAINERS
+    const modalEl = document.getElementById('trainerModal');
+    if (modalEl) {
+        trainerModal = new bootstrap.Modal(modalEl);
+    }
+
+    renderTrainers();
+
     // LOGOUT LOGIC
     document.getElementById('navLogoutBtn')?.addEventListener('click', () => {
         localStorage.setItem('isLoggedIn', 'false');
         window.location.href = 'index.html';
     });
+
 });
 
-// DUMMY DATA FOR REPORTS - BACKEND: Replace this with data from your database/API
+
+// BACKEND DEVELOPER: MAKE SURE THIS UPDATES/SAVES
+function setupProfileActions() {
+    const editBtn = document.getElementById('editToggleBtn');
+    const saveBtn = document.getElementById('saveBtn');
+    
+    if (!editBtn) return;
+
+    editBtn.addEventListener('click', function() {
+        const isEditing = this.innerText === "Cancel";
+        const displayFields = document.querySelectorAll('.display-field');
+        const editFields = document.querySelectorAll('.edit-field');
+        const mainInputs = document.querySelectorAll('.main-input');
+
+        if (isEditing) {
+            this.innerText = "Edit Profile";
+            this.classList.replace('btn-secondary', 'btn-outline-primary');
+            saveBtn.classList.add('d-none');
+            displayFields.forEach(f => f.classList.remove('d-none'));
+            editFields.forEach(f => f.classList.add('d-none'));
+            mainInputs.forEach(i => i.disabled = true);
+        } else {
+            this.innerText = "Cancel";
+            this.classList.replace('btn-outline-primary', 'btn-secondary');
+            saveBtn.classList.remove('d-none');
+            displayFields.forEach(f => f.classList.add('d-none'));
+            editFields.forEach(f => f.classList.remove('d-none'));
+            mainInputs.forEach(i => i.disabled = false);
+        }
+    });
+
+    saveBtn?.addEventListener('click', () => {
+        alert("Changes saved!");
+        location.reload();
+    });
+}
+
+// DUMMY DATA - BACKEND: Replace this with data from database/API
 const reportsData = [
     {
         status: 'Dangerous',
@@ -437,38 +742,66 @@ function loadProfileData() {
     document.getElementById('docFileName').innerText = d.doc;
 }
 
-// BACKEND DEVELOPER: MAKE SURE THIS UPDATES/SAVES
-function setupProfileActions() {
-    const editBtn = document.getElementById('editToggleBtn');
-    const saveBtn = document.getElementById('saveBtn');
-    
-    if (!editBtn) return;
+const myBookings = [
+    {
+        id: "BK-001",
+        tourist_name: "Jasmine C. Raviz",
+        email: "jasmine@example.com",
+        month: "MAY",
+        day: "WED",
+        num: "28",
+        time: "8:00 - 11:00 AM",
+        location: "Front of SurfSafe Office",
+        status: "upcoming"
+    },
+    {
+        id: "BK-002",
+        tourist_name: "Ann Dominique C. Estrada",
+        email: "ann.estrada@example.com",
+        month: "JUNE",
+        day: "MON",
+        num: "01",
+        time: "8:00 - 11:00 AM",
+        location: "Bagasbas Beach Marker",
+        status: "upcoming"
+    }
+];
 
-    editBtn.addEventListener('click', function() {
-        const isEditing = this.innerText === "Cancel";
-        const displayFields = document.querySelectorAll('.display-field');
-        const editFields = document.querySelectorAll('.edit-field');
-        const mainInputs = document.querySelectorAll('.main-input');
-
-        if (isEditing) {
-            this.innerText = "Edit Profile";
-            this.classList.replace('btn-secondary', 'btn-outline-primary');
-            saveBtn.classList.add('d-none');
-            displayFields.forEach(f => f.classList.remove('d-none'));
-            editFields.forEach(f => f.classList.add('d-none'));
-            mainInputs.forEach(i => i.disabled = true);
-        } else {
-            this.innerText = "Cancel";
-            this.classList.replace('btn-outline-primary', 'btn-secondary');
-            saveBtn.classList.remove('d-none');
-            displayFields.forEach(f => f.classList.add('d-none'));
-            editFields.forEach(f => f.classList.remove('d-none'));
-            mainInputs.forEach(i => i.disabled = false);
+const trainersData = [
+    {
+        name: "Jennie Kim",
+        image: "assets/jennie.jpg",
+        rate: 1300,
+        active_days: ["M", "W", "F", "S"],
+        expertise: ["Beginner Surfing", "Breath Control", "Water Safety"], 
+        hasProfile: true,
+        schedules: {
+            "2026-05-11": ["6:00 AM - 8:00 AM", "8:30 AM - 10:30 AM"],
+            "2026-05-13": ["2:00 PM - 4:00 PM"],
+            "2026-05-15": ["6:00 AM - 8:00 AM", "2:00 PM - 4:00 PM"]
         }
-    });
-
-    saveBtn?.addEventListener('click', () => {
-        alert("Changes saved!");
-        location.reload();
-    });
-}
+    },
+    {
+        name: "Kim Taehyung",
+        image: "assets/v.jpg",
+        rate: 1300,
+        active_days: ["M", "T", "W", "TH", "F", "S", "SU"],
+        expertise: ["Intermediate Surfing", "Longboarding"], 
+        hasProfile: true,
+        schedules: {
+            "2026-05-11": ["8:00 AM - 10:00 AM"],
+            "2026-05-12": ["1:00 PM - 3:00 PM"]
+        }
+    },
+    {
+        name: "Im Nayeon",
+        image: "assets/nayeon.jpg",
+        rate: 1300,
+        active_days: ["M", "T", "W", "TH", "F", "S", "SU"],
+        expertise: ["Kids Surfing", "First Aid"],
+        hasProfile: true,
+        schedules: {
+            "2026-05-14": ["6:00 AM - 8:00 AM"]
+        }
+    }
+];
