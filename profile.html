@@ -1,156 +1,142 @@
 <!DOCTYPE html>
-
 <html lang="en">
 
-    <head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SurfSafe - Profile</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
 
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-        <title>SurfSafe - Profile</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-        <link rel="stylesheet" href="style.css">
-        
-    </head>
+<body>
 
-    <body>
+    <header class="navbar navbar-expand-md sticky-top shadow-sm">
+        <div class="header-container">
+            <img src="assets/logo.svg" alt="SurfSafe Logo" class="logo-icon">
 
-        <header class="navbar navbar-expand-md sticky-top shadow-sm">
+            <button class="navbar-toggler custom-hamburger" type="button" data-bs-toggle="collapse" data-bs-target="#surfNavbar">
+                <div class="hamburger-lines">
+                    <span class="line line1"></span>
+                    <span class="line line2"></span>
+                    <span class="line line3"></span>
+                </div>
+            </button>
 
-            <div class="header-container">
-                <img src="assets/logo.svg" alt="SurfSafe Logo" class="logo-icon">
+            <div class="collapse navbar-collapse" id="surfNavbar">
+                <nav class="nav-pages mx-auto">
+                    <a href="index.html">Home</a>
+                    <a href="marine_data.html">Marine Data</a>
+                    <a href="hazard_map.html">Hazard Map</a>
+                    <a href="report.html">Report</a>
+                    <a href="about.html">About</a>
+                    <a href="trainers.html" id="nav-book-trainer" class="d-none">Trainers</a>
+                    <a href="my_bookings.html" id="nav-my-bookings" class="d-none">My Bookings</a>
+                </nav>
 
-                <button class="navbar-toggler custom-hamburger" type="button" data-bs-toggle="collapse" data-bs-target="#surfNavbar">
-                    <div class="hamburger-lines">
-                        <span class="line line1"></span>
-                        <span class="line line2"></span>
-                        <span class="line line3"></span>
+                <div id="user-profile-section" class="d-none">
+                    <div class="dropdown">
+                        <a href="#" class="profile-link d-flex align-items-center dropdown-toggle" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle profile-nav-icon"></i>
+                            <span class="ms-2">Profile</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="profileDropdown">
+                            <li><a class="dropdown-item" href="profile.html"><i class="bi bi-person-bounding-box me-2"></i>My Profile</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><button class="dropdown-item text-danger" id="navLogoutBtn"><i class="bi bi-box-arrow-right me-2"></i>Logout</button></li>
+                        </ul>
                     </div>
-                </button>
+                </div>
 
-                <div class="collapse navbar-collapse" id="surfNavbar">
-                    <nav class="nav-pages mx-auto">
-                        <a href="index.html">Home</a>
-                        <a href="marine_data.html">Marine Data</a>
-                        <a href="hazard_map.html">Hazard Map</a>
-                        <a href="report.html">Report</a>
-                        <a href="about.html">About</a>
-                        <a href="trainers.html" id="nav-book-trainer" class="d-none">Trainers</a>
-                        <a href="my_bookings.html" id="nav-my-bookings" class="d-none">My Bookings</a>
-                    </nav>
-
-                    <div id="user-profile-section" class="d-none">
-                        <div class="dropdown">
-                            <a href="#" class="profile-link d-flex align-items-center dropdown-toggle" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-person-circle profile-nav-icon"></i>
-                                <span class="ms-2">Profile</span>
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="profileDropdown">
-                                <li><a class="dropdown-item" href="profile.html"><i class="bi bi-pencil-square me-2"></i>Edit Profile</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><button class="dropdown-item text-danger" id="navLogoutBtn"><i class="bi bi-box-arrow-right me-2"></i>Logout</button></li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div id="auth-controls" class="auth-buttons">
-                        <a href="login.html" class="btn-login">Login</a>
-                        <a href="signup.html" class="btn-signup">Sign Up</a>
-                    </div>
+                <div id="auth-controls" class="auth-buttons">
+                    <a href="login.html" class="btn-login">Login</a>
+                    <a href="signup.html" class="btn-signup">Sign Up</a>
                 </div>
             </div>
-        </header>
+        </div>
+    </header>
 
 
-        <div class="profile-container mt-4">
+    <div class="profile-container mt-4">
 
-            <!-- PROFILE HEADER-->
-            <div class="profile-header-card">
-                <div class="profile-pic-wrapper">
-                    <img src="https://via.placeholder.com/150" alt="Profile Picture" class="profile-pic-img" id="displayPic">
-                    <label for="profilePicUpload" class="upload-badge">
-                        <i class="bi bi-camera-fill"></i>
-                    </label>
-                    <input type="file" id="profilePicUpload" hidden accept="image/*">
+        <div class="profile-header-card" id="profile-header-section"> 
+            <div class="profile-pic-wrapper">
+                <img src="https://via.placeholder.com/150" alt="Profile Picture" class="profile-pic-img" id="displayPic">
+                <label for="profilePicUpload" class="upload-badge">
+                    <i class="bi bi-camera-fill"></i>
+                </label>
+                <input type="file" id="profilePicUpload" hidden accept="image/*">
+            </div>
+            <div class="profile-info-main">
+                <h2 id="trainerName">Loading...</h2>
+                <span id="verificationBadge" class="trainer-status-badge d-none">
+                    <i class="bi bi-patch-check-fill"></i> Verified Surf Trainer
+                </span>
+                <p class="location-label">
+                    <i class="bi bi-geo-alt"></i> <span id="trainerLocation">Bagasbas Beach, Daet</span>
+                </p>
+            </div>
+        </div>
+
+        <div class="profile-grid">
+            
+            <div class="side-card">
+                <h3 class="section-subtitle-profile" id="sideCardTitle">Account Details</h3>
+                
+                <div class="info-row">
+                    <span class="info-label">Email Address</span>
+                    <span class="info-value display-field" id="trainerEmail">...</span>
+                    <input type="email" id="inputEmail" class="form-control edit-field d-none">
                 </div>
-                <div class="profile-info-main">
-                    <h2 id="trainerName">Loading...</h2>
-                    <span id="verificationBadge" class="trainer-status-badge d-none">
-                        <i class="bi bi-patch-check-fill"></i> Verified Surf Trainer
-                    </span>
-                    <p class="location-label">
-                        <i class="bi bi-geo-alt"></i> <span id="trainerLocation">Bagasbas Beach, Daet</span>
-                    </p>
+
+                <div class="info-row">
+                    <span class="info-label">Password</span>
+                    <span class="info-value display-field">********</span>
+                    <input type="password" id="inputPassword" class="form-control edit-field d-none" placeholder="New password">
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">Phone Number</span>
+                    <span class="info-value display-field" id="trainerPhone">...</span>
+                    <input type="text" id="inputPhone" class="form-control edit-field d-none">
+                </div>
+
+                <div class="info-row" id="experience-section">
+                    <span class="info-label">Experience Level</span>
+                    <span class="info-value display-field" id="trainerExp">...</span>
+                    <input type="text" id="inputExp" class="form-control edit-field d-none">
+                </div>
+
+                <div class="mt-4 d-grid gap-2">
+                    <button id="editToggleBtn" class="btn btn-outline-primary w-100">Edit Profile</button>
+                    <button id="saveBtn" class="btn btn-primary w-100 d-none">Save Changes</button>
                 </div>
             </div>
 
-            <!-- ACCOUNT DETAILS-->
-            <div class="profile-grid">
-                <div class="side-card">
-                    <h3 class="section-subtitle-profile">Account Details</h3>
-                    
-                    <!-- EMAIL -->
-                    <div class="info-row">
-                        <span class="info-label">Email Address</span>
-                        <span class="info-value display-field" id="trainerEmail">...</span>
-                        <input type="email" id="inputEmail" class="form-control edit-field d-none">
-                    </div>
-
-                    <!-- PASSWORD -->
-                    <div class="info-row">
-                        <span class="info-label">Password</span>
-                        <span class="info-value display-field">********</span>
-                        <input type="password" id="inputPassword" class="form-control edit-field d-none" placeholder="New password">
-                    </div>
-
-                    <!-- PHONE NUMBER -->
-                    <div class="info-row">
-                        <span class="info-label">Phone Number</span>
-                        <span class="info-value display-field" id="trainerPhone">...</span>
-                        <input type="text" id="inputPhone" class="form-control edit-field d-none">
-                    </div>
-
-                    <!-- EXPERIENCE LEVEL -->
-                    <div class="info-row">
-                        <span class="info-label">Experience Level</span>
-                        <span class="info-value display-field" id="trainerExp">...</span>
-                        <input type="text" id="inputExp" class="form-control edit-field d-none">
-                    </div>
-
-                    <!-- BUTTONS -->
-                    <div class="mt-4 d-grid gap-2">
-                        <button id="editToggleBtn" class="btn btn-outline-primary w-100">Edit Profile</button>
-                        <button id="saveBtn" class="btn btn-primary w-100 d-none">Save Changes</button>
-                    </div>
-                </div>
-
-                <!-- TRAINER INFO -->
-                <div class="main-profile-card">
+            <div class="profile-main-content">
+                
+                <div class="main-profile-card" id="trainer-info-card">
                     <h3 class="section-subtitle-profile">Trainer Information</h3>
-                    
+    
                     <div class="row g-3">
-
-                        <!-- SPECIALIZATION -->
                         <div class="col-md-6">
                             <label class="form-label">Specialization</label>
                             <input type="text" id="inputSpecialization" class="form-control main-input" disabled>
                         </div>
 
-                        <!-- CERTIFICATIONS -->
                         <div class="col-md-6">
                             <label class="form-label">Certifications</label>
                             <input type="text" id="inputCertifications" class="form-control main-input" disabled>
                         </div>
                     </div>
 
-                    <!-- BIO -->
                     <div class="mt-3">
                         <label class="form-label">Bio / About Me</label>
                         <textarea id="inputBio" class="form-control main-input" rows="4" disabled></textarea>
                     </div>
 
-                    <!-- UPLOADED DOCUMENTS -->
                     <div class="section-subtitle-profile mt-4">Documents Uploaded</div>
                     <div class="document-item d-flex align-items-center p-2 border rounded">
                         <i class="bi bi-file-earmark-check fs-3 me-2 text-primary"></i>
@@ -160,10 +146,28 @@
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-        <script src="script.js"></script>
-    </body>
+                <div class="main-profile-card d-none mt-4" id="tourist-activity-card">
+                    <div class="activity-section">
+                        <h3 class="section-subtitle-profile"><i class="bi bi-calendar-check me-2"></i>Recent Bookings</h3>
+                        <div id="tourist-bookings-list" class="mt-3">
+                            <p class="text-muted small">Manage your upcoming surf sessions and trainer schedules.</p>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="activity-section">
+                        <h3 class="section-subtitle-profile"><i class="bi bi-flag me-2"></i>My Reports</h3>
+                        <div id="tourist-reports-list" class="mt-3">
+                            <p class="text-muted small">View the history of safety reports you have submitted.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div> </div> </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="script.js"></script>
+</body>
 </html>

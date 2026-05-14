@@ -212,6 +212,9 @@ function updateNavbarBasedOnRole() {
     const authControls = document.getElementById('auth-controls');
     const userProfileSection = document.getElementById('user-profile-section');
 
+    const touristBookings = document.getElementById('tourist-bookings-link');
+    const touristReports = document.getElementById('tourist-reports-link');
+
     if (isLoggedIn) {
         if (authControls) authControls.classList.add('d-none');
         if (userProfileSection) userProfileSection.classList.remove('d-none');
@@ -219,6 +222,8 @@ function updateNavbarBasedOnRole() {
         if (userRole === 'Trainer') {
             trainersLink?.classList.remove('d-none');   
             myBookingsLink?.classList.remove('d-none');
+            touristBookings?.classList.add('d-none');
+            touristReports?.classList.add('d-none');
         } else if (userRole === 'Tourist') {
             trainersLink?.classList.remove('d-none');
             myBookingsLink?.classList.add('d-none');    
@@ -354,8 +359,36 @@ function showDetails(id) {
         document.getElementById('detail-datetime').innerText = `${booking.day}, May ${booking.num} | ${booking.time}`;
         document.getElementById('detail-location').innerText = booking.location;
         
-        const myModal = new bootstrap.Modal(document.getElementById('detailsModal'));
-        myModal.show();
+        const btnContainer = document.getElementById('complete-btn-container');
+        
+        if (booking.status === 'upcoming') {
+            btnContainer.innerHTML = `
+                <button class="btn btn-success w-100 rounded-pill" onclick="completeBooking('${booking.id}')">
+                    <i class="bi bi-check-circle me-2"></i>Mark as Completed
+                </button>
+            `;
+        } else {
+            btnContainer.innerHTML = '';
+        }
+
+        const detailsModal = new bootstrap.Modal(document.getElementById('detailsModal'));
+        detailsModal.show();
+    }
+}
+
+function completeBooking(id) {
+    const bookingIndex = myBookings.findIndex(b => b.id === id);
+    
+    if (bookingIndex !== -1) {
+        myBookings[bookingIndex].status = 'completed';
+        
+        const modalElement = document.getElementById('detailsModal');
+        const modalInstance = bootstrap.Modal.getInstance(modalElement);
+        modalInstance.hide();
+
+        renderBookings();
+        
+        alert("Lesson marked as completed!");
     }
 }
 
@@ -548,6 +581,143 @@ function confirmBooking(event, index) {
     trainerModal.hide();
 }
 
+// FOR TOURIST VIEW - profile.html
+function renderTouristBookings() {
+    const listContainer = document.getElementById('tourist-bookings-list');
+    if (!listContainer) return;
+
+    listContainer.innerHTML = '';
+
+    touristActivityData.forEach(booking => {
+        const isUpcoming = booking.status === 'upcoming';
+        
+        let statusColor = 'text-muted'; 
+        if (booking.status === 'completed') statusColor = 'text-success';
+        if (booking.status === 'cancelled') statusColor = 'text-danger';
+
+        const activityHTML = `
+            <div class="booking-item p-3 mb-3 border rounded shadow-sm bg-white">
+                <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center">
+                    
+                    <div class="flex-grow-1 w-100">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <h6 class="fw-bold mb-0">${booking.trainerName}</h6>
+                            <div class="d-block d-sm-none">
+                                ${isUpcoming ? '' : `<span class="fw-bold small text-uppercase ${statusColor}">${booking.status}</span>`}
+                            </div>
+                        </div>
+
+                        <div class="mb-2">
+                            <p class="text-muted mb-0 small text-break"><i class="bi bi-envelope me-2"></i>${booking.trainerEmail}</p>
+                            <p class="text-muted mb-0 small"><i class="bi bi-telephone me-2"></i>${booking.trainerPhone}</p>
+                        </div>
+                       
+                        <div class="row g-0">
+                            <div class="col-12 mb-1">
+                                <p class="text-muted mb-0 small">
+                                    <i class="bi bi-calendar3 me-2"></i>${booking.date}
+                                </p>
+                            </div>
+                            <div class="col-12 mb-1">
+                                <p class="text-muted mb-0 small">
+                                    <i class="bi bi-clock me-2"></i>${booking.time}
+                                </p>
+                            </div>
+                            <div class="col-12">
+                                <p class="text-muted mb-0 small">
+                                    <i class="bi bi-geo-alt me-2"></i>${booking.location}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3 mt-sm-0 ms-sm-3 text-start text-sm-end w-100 w-sm-auto border-top pt-2 pt-sm-0 border-sm-0" style="min-width: 120px;">
+                        ${isUpcoming ? `
+                            <button class="btn btn-sm btn-outline-danger px-3 rounded-pill w-100 w-sm-auto" 
+                                    onclick="cancelBookingAction('${booking.id}')">
+                                <i class="bi bi-x-circle me-1"></i>Cancel
+                            </button>
+                        ` : `
+                            <div class="d-none d-sm-block">
+                                <span class="fw-bold small text-uppercase ${statusColor}">
+                                    ${booking.status}
+                                </span>
+                            </div>
+                        `}
+                    </div>
+                </div>
+            </div>
+        `;
+        listContainer.innerHTML += activityHTML;
+    });
+}
+
+function cancelBookingAction(bookingId) {
+    const confirmCancel = confirm(`Are you sure you want to cancel booking ${bookingId}?`);
+    
+    if (confirmCancel) {
+        const index = touristActivityData.findIndex(b => b.id === bookingId);
+        if (index !== -1) {
+            touristActivityData[index].status = 'cancelled';
+            
+            alert("Booking Cancelled!");
+            renderTouristBookings(); 
+        }
+    }
+}
+
+let reportMap;
+let reportMarker;
+
+// FOR SUBMIT LIVE REPORTS - report.html
+function handleReportSubmission() {
+    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+
+    if (isLoggedIn) {
+        const reportModalEl = document.getElementById('reportFormModal');
+        const reportModal = new bootstrap.Modal(reportModalEl);
+        reportModal.show();
+
+        reportModalEl.addEventListener('shown.bs.modal', function () {
+            if (!reportMap) {
+                reportMap = L.map('map-picker').setView([14.1332, 122.9861], 15);
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap'
+                }).addTo(reportMap);
+
+                reportMap.on('click', function (e) {
+                    const lat = e.latlng.lat;
+                    const lng = e.latlng.lng;
+
+                    if (reportMarker) {
+                        reportMarker.setLatLng([lat, lng]);
+                    } else {
+                        reportMarker = L.marker([lat, lng], { draggable: true }).addTo(reportMap);
+                        reportMarker.on('dragend', function (event) {
+                            const position = reportMarker.getLatLng();
+                            document.getElementById('lat').value = position.lat.toFixed(6);
+                            document.getElementById('lng').value = position.lng.toFixed(6);
+                        });
+                    }
+                    document.getElementById('lat').value = lat.toFixed(6);
+                    document.getElementById('lng').value = lng.toFixed(6);
+                });
+            }
+            reportMap.invalidateSize();
+        }, { once: true });
+
+    } else {
+        const authModal = new bootstrap.Modal(document.getElementById('authNudgeModal'));
+        authModal.show();
+    }
+}
+
+function submitReport(event) {
+    event.preventDefault();
+    alert("Report submitted successfully! Thank you for helping the Bagasbas community.");
+    bootstrap.Modal.getInstance(document.getElementById('reportFormModal')).hide();
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     
@@ -571,6 +741,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (tabTrigger) bootstrap.Tab.getOrCreateInstance(tabTrigger).show();
             }, 10);
         });
+    }
+
+    // FOR REPORTS
+    const reportForm = document.getElementById('hazardForm');
+    if (reportForm) {
+        reportForm.addEventListener('submit', submitReport);
     }
 
     // FOR THE SIGN UP REQUIRED POPUP
@@ -613,10 +789,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // PROFILE PAGE LOGIC
     if (document.getElementById('trainerName')) {
-        loadProfileData();
-        setupProfileActions(); 
-    }
+    loadProfileData();
+    setupProfileActions(); 
 
+    const userRole = localStorage.getItem('userRole');
+
+    if (userRole === 'Tourist') {
+        // HIDE THE ONES FOR TRAINERS ONLY
+        document.getElementById('profile-header-section')?.classList.add('d-none');
+        document.getElementById('experience-section')?.classList.add('d-none');
+        document.getElementById('trainer-info-card')?.classList.add('d-none');
+
+        // SHOW DASHBOARD FOR TOURIST 
+        const touristCard = document.getElementById('tourist-activity-card');
+        if (touristCard) {
+            touristCard.classList.remove('d-none');
+            renderTouristBookings(); 
+        }
+
+        const sideCardTitle = document.getElementById('sideCardTitle');
+        if (sideCardTitle) sideCardTitle.innerText = "Manage Account";
+
+        const editBtn = document.getElementById('editToggleBtn');
+        if (editBtn) editBtn.innerText = "Update Info";
+
+        if (typeof renderTouristReports === "function") renderTouristReports();
+
+    } else {
+        // FOR TRAINERS UI
+        document.getElementById('profile-header-section')?.classList.remove('d-none');
+        document.getElementById('trainer-info-card')?.classList.remove('d-none');
+        document.getElementById('tourist-activity-card')?.classList.add('d-none');
+        
+        if (typeof renderBookings === "function") renderBookings();
+    }
+}
      // FOR MY BOOKINGS LIST
     if (document.getElementById('upcoming-list')) renderBookings();
 
@@ -631,6 +838,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // LOGOUT LOGIC
     document.getElementById('navLogoutBtn')?.addEventListener('click', () => {
         localStorage.setItem('isLoggedIn', 'false');
+        localStorage.removeItem('userRole');
         window.location.href = 'index.html';
     });
 
@@ -803,5 +1011,18 @@ const trainersData = [
         schedules: {
             "2026-05-14": ["6:00 AM - 8:00 AM"]
         }
+    }
+];
+
+const touristActivityData = [
+    {
+        id: 'BK-2026-001',
+        trainerName: 'Kim Taehyung',
+        trainerEmail: 'v@surfsafe.com',
+        trainerPhone: '+63 912 345 6789',
+        date: 'May 28, 2026',
+        time: '8:00 - 11:00 AM',
+        location: 'Bagasbas Lighthouse',
+        status: 'upcoming'
     }
 ];

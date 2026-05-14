@@ -39,14 +39,19 @@ function renderCalendar() {
 
     calendarGrid.innerHTML = '';
 
-    const days = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
-    
-    days.forEach(day => {
-        const div = document.createElement('div');
-        div.className = 'grid-header';
-        div.innerText = day;
-        calendarGrid.appendChild(div);
-    });
+    // 1. Check natin kung mobile view
+    const isMobile = window.innerWidth <= 575.98;
+
+    // 2. I-render lang ang headers kung HINDI mobile
+    if (!isMobile) {
+        const days = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
+        days.forEach(day => {
+            const div = document.createElement('div');
+            div.className = 'grid-header';
+            div.innerText = day;
+            calendarGrid.appendChild(div);
+        });
+    }
 
     const year = currentPivotDate.getFullYear();
     const month = currentPivotDate.getMonth();
@@ -54,16 +59,19 @@ function renderCalendar() {
     const firstDayOfMonth = new Date(year, month, 1);
     const lastDayOfMonth = new Date(year, month + 1, 0);
     
-    let startDayIndex = firstDayOfMonth.getDay() - 1;
-    if (startDayIndex === -1) startDayIndex = 6;
-
     const monthName = firstDayOfMonth.toLocaleString('default', { month: 'long' });
     dateRangeEl.innerText = `${monthName} ${year}`;
 
-    for (let i = 0; i < startDayIndex; i++) {
-        const emptyDiv = document.createElement('div');
-        emptyDiv.className = 'day-card empty-slot';
-        calendarGrid.appendChild(emptyDiv);
+    // 3. I-render lang ang empty slots kung HINDI mobile
+    if (!isMobile) {
+        let startDayIndex = firstDayOfMonth.getDay() - 1;
+        if (startDayIndex === -1) startDayIndex = 6;
+
+        for (let i = 0; i < startDayIndex; i++) {
+            const emptyDiv = document.createElement('div');
+            emptyDiv.className = 'day-card empty-slot';
+            calendarGrid.appendChild(emptyDiv);
+        }
     }
 
     const totalDays = lastDayOfMonth.getDate();
@@ -72,13 +80,18 @@ function renderCalendar() {
         const dateISO = date.toISOString().split('T')[0];
         const isToday = date.toDateString() === new Date().toDateString();
 
+        const dayLabel = date.toLocaleString('default', { weekday: 'short' });
+
         const card = document.createElement('div');
         card.className = `day-card ${isToday ? 'active-day' : ''}`;
         card.setAttribute('onclick', `openAssignModal('${dateISO}')`);
         
         card.innerHTML = `
-            <div class="d-flex justify-content-between">
-                <span>${date.getDate()}</span>
+            <div class="d-flex justify-content-between align-items-start">
+                <div d-flex flex-column>
+                    <span class="day-name-mobile d-sm-none" style="display:block; font-size: 8px; font-weight: 700; color: var(--surf-grayish); line-height: 1;">${dayLabel.toUpperCase()}</span>
+                    <span>${date.getDate()}</span>
+                </div>
                 ${isToday ? '<i class="bi bi-circle-fill" style="font-size: 8px; color: var(--surf-navy);"></i>' : ''}
             </div>
             <div class="schedule-slots" id="slots-${dateISO}">

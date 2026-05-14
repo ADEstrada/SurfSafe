@@ -1070,10 +1070,11 @@ body {
     font-size: 14px;
 }
 
-.profile-grid {
+profile-grid {
     display: grid;
-    grid-template-columns: 350px 1fr;
-    gap: 30px;
+    grid-template-columns: 350px 1fr; /* Fixed width sa account info, flexible sa activity */
+    gap: 25px;
+    align-items: start;
 }
 
 .side-card, .main-profile-card {
@@ -1326,6 +1327,26 @@ body {
     display: none !important;
 }
 
+#editToggleBtn {
+    transition: all 0.3s ease; 
+    border-color:  var(--surf-navy); 
+    color:  var(--surf-navy);
+}
+
+#editToggleBtn:hover, #saveBtn:hover {
+    background-color: var(--surf-navy) !important; 
+    color: white !important;
+    border-color:  var(--surf-navy) !important;
+}
+
+#map-picker {
+    height: 350px;
+    width: 100%;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    margin-bottom: 15px;
+}
+
 /* RESPONSIVENESS */
 @media (max-width: 992px) {
     .main-title {
@@ -1338,6 +1359,17 @@ body {
 
     .header-container {
         padding: 0 20px;
+    }
+
+    .profile-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .main-profile-card {
+        background: #fff;
+        padding: 30px;
+        border-radius: 20px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
     }
 }
 
