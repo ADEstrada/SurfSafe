@@ -410,6 +410,12 @@ function getWeeklyStatus(dayAbbreviation, activeDays) {
 // BACKEND DEVELOPER: PLEASE MAKE SURE THAT IN THE IMG CONTAINER, REAL IMAGE WILL BE SHOWN
 function renderTrainers() {
     const list = document.getElementById('trainers-list');
+
+    if (!list) {
+        console.warn("Element 'trainers-list' not found on this page.");
+        return; 
+    }
+    
     const placeholder = "https://placehold.co/400x500/00167A/FFFFFF?text=SurfSafe+Trainer";
 
     list.innerHTML = trainersData.map((trainer, index) => `
@@ -631,11 +637,11 @@ function renderTouristBookings() {
                         </div>
                     </div>
                     
-                    <div class="mt-3 mt-sm-0 ms-sm-3 text-start text-sm-end w-100 w-sm-auto border-top pt-2 pt-sm-0 border-sm-0" style="min-width: 120px;">
+                    <div class="booking-action-container mt-3 mt-sm-0 ms-sm-3 text-sm-end border-sm-0">
                         ${isUpcoming ? `
-                            <button class="btn btn-sm btn-outline-danger px-3 rounded-pill w-100 w-sm-auto" 
+                            <button class="btn btn-sm btn-outline-danger px-4 rounded-pill btn-cancel-responsive" 
                                     onclick="cancelBookingAction('${booking.id}')">
-                                <i class="bi bi-x-circle me-1"></i>Cancel
+                                <i class="bi bi-x-circle me-2"></i>Cancel
                             </button>
                         ` : `
                             <div class="d-none d-sm-block">
@@ -718,6 +724,52 @@ function submitReport(event) {
     alert("Report submitted successfully! Thank you for helping the Bagasbas community.");
     bootstrap.Modal.getInstance(document.getElementById('reportFormModal')).hide();
 }
+
+function renderMyReports() {
+    const container = document.getElementById('my-reports-list');
+    if (!container) return;
+
+    if (!myReportsData || myReportsData.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-5 border rounded bg-light">
+                <i class="bi bi-clipboard-x text-muted" style="font-size: 2.5rem;"></i>
+                <p class="text-muted mt-2">No reports submitted yet.</p>
+            </div>`;
+        return;
+    }
+
+    container.innerHTML = myReportsData.map(report => {
+        const isApproved = report.verification_status === 'Approved';
+        const badgeClass = isApproved ? 'bg-success' : 'bg-warning text-dark';
+        
+        return `
+            <div class="report-item p-3 mb-3 border rounded shadow-sm bg-white">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <span class="badge ${badgeClass} rounded-pill px-3 py-1 mb-2" style="font-size: 0.7rem;">
+                            ${report.verification_status.toUpperCase()}
+                        </span>
+                        <h6 class="fw-bold mb-1">${report.hazard_type}</h6>
+                    </div>
+                    <small class="text-muted" style="font-size: 0.75rem;">${report.reported_at}</small>
+                </div>
+
+                <p class="text-muted mb-3 small">${report.description}</p>
+
+                <div class="d-flex align-items-center justify-content-between border-top pt-2 mt-2">
+                    <div class="small text-muted">
+                        <i class="bi bi-geo-alt-fill text-danger me-1"></i>
+                        ${report.latitude}, ${report.longitude}
+                    </div>
+                    <button class="btn btn-sm text-danger p-0" onclick="deleteReport('${report.id}')">
+                        <i class="bi bi-trash3"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
 
 document.addEventListener('DOMContentLoaded', () => {
     
@@ -813,7 +865,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const editBtn = document.getElementById('editToggleBtn');
         if (editBtn) editBtn.innerText = "Update Info";
 
-        if (typeof renderTouristReports === "function") renderTouristReports();
+        if (typeof renderMyReports === "function") renderMyReports();
 
     } else {
         // FOR TRAINERS UI
@@ -821,7 +873,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('trainer-info-card')?.classList.remove('d-none');
         document.getElementById('tourist-activity-card')?.classList.add('d-none');
         
-        if (typeof renderBookings === "function") renderBookings();
+        if (typeof renderMyReports === "function") renderMyReports();
     }
 }
      // FOR MY BOOKINGS LIST
@@ -1024,5 +1076,36 @@ const touristActivityData = [
         time: '8:00 - 11:00 AM',
         location: 'Bagasbas Lighthouse',
         status: 'upcoming'
+    }
+];
+
+
+const myReportsData = [
+    {
+        id: "REP-001",
+        hazard_type: "Strong Current",
+        description: "Noticeable strong rip currents near the main lifeguard tower. Surfers are advised to stay cautious.",
+        latitude: "14.1332",
+        longitude: "122.9861",
+        reported_at: "May 12, 2026 | 09:15 AM",
+        verification_status: "Approved"
+    },
+    {
+        id: "REP-002",
+        hazard_type: "Debris / Floating Logs",
+        description: "Large logs spotted drifting near the shoreline after the heavy rain last night.",
+        latitude: "14.1345",
+        longitude: "122.9870",
+        reported_at: "May 14, 2026 | 02:30 PM",
+        verification_status: "Pending"
+    },
+    {
+        id: "REP-003",
+        hazard_type: "Jellyfish Alert",
+        description: "Small group of box jellyfish seen near the beginner's area.",
+        latitude: "14.1320",
+        longitude: "122.9855",
+        reported_at: "May 15, 2026 | 08:00 AM",
+        verification_status: "Pending"
     }
 ];

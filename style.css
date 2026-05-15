@@ -1347,6 +1347,135 @@ profile-grid {
     margin-bottom: 15px;
 }
 
+.booking-action-container {
+    min-width: 120px;
+    display: flex;
+    justify-content: flex-end; 
+}
+
+.btn-cancel-responsive {
+    width: auto; 
+    padding: 8px 20px;
+}
+
+.emergency-card, .safety-card {
+    transition: transform 0.3s ease;
+    border: none;
+}
+
+.emergency-card:hover, .safety-card:hover {
+    transform: translateY(-5px);
+}
+
+.emergency-card ul li, .safety-card ul li {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    letter-spacing: 0.3px;
+}
+
+/* ABOUT PAGE CUSTOM STYLES */
+.about-page {
+    background-color: #ffffff;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Hero Style */
+.about-hero {
+    padding: 80px 0 40px;
+    text-align: center;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.brand-title {
+    font-weight: 800;
+    font-size: 3rem;
+    color: #001f54;
+    letter-spacing: 4px;
+    margin-bottom: 10px;
+}
+
+.brand-tagline {
+    color: #8fb1d1;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+/* Story Layout */
+.story-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 40px;
+    align-items: center;
+}
+
+.story-content {
+    flex: 1;
+    min-width: 300px;
+}
+
+.story-content p {
+    color: #555;
+    line-height: 1.8;
+    margin-bottom: 20px;
+    text-align: justify;
+}
+
+.story-quote {
+    flex: 1;
+    min-width: 300px;
+    background-color: #f8fbff;
+    padding: 40px;
+    border-radius: 30px;
+    border-left: 8px solid #001f54;
+}
+
+.story-quote p {
+    font-style: italic;
+    font-size: 1.2rem;
+    color: #001f54;
+    font-weight: 500;
+    margin: 0;
+}
+
+/* Pillar Cards */
+.pillar-card {
+    padding: 40px 20px;
+    text-align: center;
+    background: #ffffff;
+    border: 1px solid #f0f0f0;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.pillar-card:hover {
+    box-shadow: 0 15px 30px rgba(0, 31, 84, 0.05);
+    transform: translateY(-10px);
+    border-color: #8fb1d1;
+}
+
+.pillar-icon {
+    font-size: 2.5rem;
+    color: #001f54;
+    margin-bottom: 20px;
+}
+
+.pillar-card h5 {
+    font-weight: 700;
+    color: #001f54;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    font-size: 1rem;
+}
+
+.pillar-card p {
+    font-size: 0.9rem;
+    color: #777;
+    line-height: 1.6;
+}
+
+
 /* RESPONSIVENESS */
 @media (max-width: 992px) {
     .main-title {
@@ -1515,6 +1644,23 @@ profile-grid {
 
     .prev-arrow { left: 5px; }
     .next-arrow { right: 5px; }
+
+    .booking-action-container {
+        width: 100% !important; 
+        display: flex !important;
+        justify-content: center !important; 
+        border-top: 1px solid var(--surf-border);
+        padding-top: 15px;
+        margin-top: 10px;
+    }
+
+    .btn-cancel-responsive {
+        width: 100% !important; 
+        max-width: 100%;
+    }
+
+     .brand-title { font-size: 2rem; }
+    .story-quote { order: -1; }
 }
 
 
