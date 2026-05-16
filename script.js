@@ -105,28 +105,34 @@ function updateForecastCardsWithTide() {
 function updateForecastCards(marineDaily, weatherDaily) {
     if (!marineDaily || !weatherDaily) return;
 
-    const dayMap = ['sun', 'mon', 'tue', 'wed', 'thurs', 'fri', 'sat'];
-
     marineDaily.time.forEach((dateStr, index) => {
         const date = new Date(dateStr);
-        const dayName = dayMap[date.getDay()];
+        const dayIndex = date.getDay();
 
-        const waveEl = document.getElementById(`wave-${dayName}`);
-        const windEl = document.getElementById(`wind-${dayName}`);
+        const card = document.querySelector(`.forecast-card[data-day="${dayIndex}"]`);
 
-        if (waveEl) {
-            waveEl.innerText = marineDaily.wave_height_max[index]?.toFixed(1) ?? "0.0";
-        }
+        if (card) {
+            const waveEl = card.querySelector('.wave-val');
+            const windEl = card.querySelector('.wind-val');
 
-        if (windEl) {
-            const wind = weatherDaily.wind_speed_10m_max?.[index];
-            windEl.innerText = wind ? wind.toFixed(1) : "--";
+            if (waveEl) {
+                const waveHeight = marineDaily.wave_height_max[index];
+                waveEl.innerText = waveHeight !== undefined && waveHeight !== null ? waveHeight.toFixed(1) : "0.0";
+            }
+
+            if (windEl) {
+                const wind = weatherDaily.wind_speed_10m_max?.[index];
+                windEl.innerText = wind !== undefined && wind !== null ? wind.toFixed(1) : "--";
+            }
         }
     });
 }
 
 //Surf/Wind Condition
 function updateSurfCondition(hourlyData) {
+    const targetEl = document.getElementById('surf-condition');
+    if (!targetEl) return;
+
     const wave = hourlyData.wave_height[0];
     const wind = hourlyData.wind_speed_10m[0];
 
@@ -138,7 +144,7 @@ function updateSurfCondition(hourlyData) {
         condition = "FAIR";
     }
 
-    document.getElementById('surf-condition').innerText = condition;
+    targetEl.innerText = condition;
 }
 
 // HOURLY WAVE HEIGHT GRAPH - marine_data.html (NEEDS API)
@@ -245,27 +251,37 @@ function updateTideInfo(tideData) {
     const nextHigh = tideData.find(t => t.type === "high" && new Date(t.time) > now);
     const nextLow = tideData.find(t => t.type === "low" && new Date(t.time) > now);
 
-    if (nextHigh) {
+    const nextHighTimeEl = document.getElementById('next-high-time');
+    const nextLowTimeEl = document.getElementById('next-low-time');
+    const localTimeEl = document.getElementById('local-time');
+
+    if (nextHigh && nextHighTimeEl) {
         const highDate = new Date(nextHigh.time);
-        document.getElementById('next-high-time').innerText = highDate.toLocaleTimeString();
+        nextHighTimeEl.innerText = highDate.toLocaleTimeString();
 
         const diff = (highDate - now) / 1000;
-        document.getElementById('high-h').innerText = Math.floor(diff / 3600);
-        document.getElementById('high-m').innerText = Math.floor((diff % 3600) / 60);
-        document.getElementById('high-s').innerText = Math.floor(diff % 60);
+        const hh = document.getElementById('high-h');
+        const hm = document.getElementById('high-m');
+        const hs = document.getElementById('high-s');
+        if (hh) hh.innerText = Math.floor(diff / 3600);
+        if (hm) hm.innerText = Math.floor((diff % 3600) / 60);
+        if (hs) hs.innerText = Math.floor(diff % 60);
     }
 
-    if (nextLow) {
+    if (nextLow && nextLowTimeEl) {
         const lowDate = new Date(nextLow.time);
-        document.getElementById('next-low-time').innerText = lowDate.toLocaleTimeString();
+        nextLowTimeEl.innerText = lowDate.toLocaleTimeString();
 
         const diff = (lowDate - now) / 1000;
-        document.getElementById('low-h').innerText = Math.floor(diff / 3600);
-        document.getElementById('low-m').innerText = Math.floor((diff % 3600) / 60);
-        document.getElementById('low-s').innerText = Math.floor(diff % 60);
+        const lh = document.getElementById('low-h');
+        const lm = document.getElementById('low-m');
+        const ls = document.getElementById('low-s');
+        if (lh) lh.innerText = Math.floor(diff / 3600);
+        if (lm) lm.innerText = Math.floor((diff % 3600) / 60);
+        if (ls) ls.innerText = Math.floor(diff % 60);
     }
 
-    document.getElementById('local-time').innerText = now.toLocaleTimeString();
+    if (localTimeEl) localTimeEl.innerText = now.toLocaleTimeString();
 }
 
 
@@ -273,10 +289,8 @@ function updateTideInfo(tideData) {
 function calculateBestSurfWindow(hourlyData) {
     if (!hourlyData) return;
 
-    // Kunin ang element
-    const displayElement = document.getElementById('best-time-window');
-
-    if (!displayElement) return; 
+    const targetEl = document.getElementById('best-time-window');
+    if (!targetEl) return;
 
     let bestIndex = 0;
     let bestScore = -Infinity;
@@ -293,7 +307,7 @@ function calculateBestSurfWindow(hourlyData) {
     }
 
     const bestTime = new Date(hourlyData.time[bestIndex]).getHours() + ":00";
-    displayElement.innerText = bestTime;
+    targetEl.innerText = bestTime;
 }
 
 // TIDE CHART - marine_data.html (NEEDS API)
@@ -370,7 +384,7 @@ async function fetchTideData() {
     try {
         const res = await fetch(url, {
             headers: {
-                'Authorization': 'ca0d194a-4bc2-11f1-b099-0242ac120004-ca0d19b8-4bc2-11f1-b099-0242ac120004'
+                'Authorization': 'df81498c-5134-11f1-b37b-0242ac120004-df8149f0-5134-11f1-b37b-0242ac120004'
             }
         });
 
@@ -408,37 +422,41 @@ function updateTideSummary() {
     function updateCountdown(target, prefix) {
         if (!target) return;
 
+        const hEl = document.getElementById(`${prefix}-h`);
+        const mEl = document.getElementById(`${prefix}-m`);
+        const sEl = document.getElementById(`${prefix}-s`);
+
+        if (!hEl || !mEl || !sEl) return;
+
         const diff = new Date(target.time) - new Date();
-        const h = Math.floor(diff / (1000 * 60 * 60));
-        const m = Math.floor((diff / (1000 * 60)) % 60);
-        const s = Math.floor((diff / 1000) % 60);
-
-        document.getElementById(`${prefix}-h`).innerText = h;
-        document.getElementById(`${prefix}-m`).innerText = m;
-        document.getElementById(`${prefix}-s`).innerText = s;
+        hEl.innerText = Math.floor(diff / (1000 * 60 * 60));
+        mEl.innerText = Math.floor((diff / (1000 * 60)) % 60);
+        sEl.innerText = Math.floor((diff / 1000) % 60);
     }
 
-    if (nextHigh) {
-        document.getElementById("next-high-time").innerText =
-            new Date(nextHigh.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const nextHighTimeEl = document.getElementById("next-high-time");
+    const nextLowTimeEl = document.getElementById("next-low-time");
+
+    if (nextHigh && nextHighTimeEl) {
+        nextHighTimeEl.innerText = new Date(nextHigh.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
 
-    if (nextLow) {
-        document.getElementById("next-low-time").innerText =
-            new Date(nextLow.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    if (nextLow && nextLowTimeEl) {
+        nextLowTimeEl.innerText = new Date(nextLow.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
 
     updateCountdown(nextHigh, "high");
     updateCountdown(nextLow, "low");
 
-    // LIVE CLOCK
-    setInterval(() => {
-        const now = new Date();
-        document.getElementById("local-time").innerText =
-            now.toLocaleTimeString();
-        updateCountdown(nextHigh, "high");
-        updateCountdown(nextLow, "low");
-    }, 1000);
+    const localTimeEl = document.getElementById("local-time");
+    if (localTimeEl) {
+        setInterval(() => {
+            const currentNow = new Date();
+            localTimeEl.innerText = currentNow.toLocaleTimeString();
+            updateCountdown(nextHigh, "high");
+            updateCountdown(nextLow, "low");
+        }, 1000);
+    }
 }
 
 //Bottom weather details
@@ -446,8 +464,7 @@ function updateWeatherDetails(weatherHourly, marineHourly) {
     const now = new Date();
     const currentIndex = weatherHourly.time.findIndex(t => {
     const d = new Date(t);
-        return d.getHours() === now.getHours() &&
-            d.getDate() === now.getDate();
+        return d.getHours() === now.getHours() && d.getDate() === now.getDate();
     });
 
     if (currentIndex === -1) return;
@@ -458,26 +475,21 @@ function updateWeatherDetails(weatherHourly, marineHourly) {
 
     const windDir = weatherHourly.wind_direction_10m[currentIndex];
     const windSpd = weatherHourly.wind_speed_10m[currentIndex];
-
     const windKph = windSpd.toFixed(1);
 
-    document.getElementById('current-wind-speed').innerText = windKph;
-    document.getElementById('current-wind-dir').innerText = getCardinalDirection(windDir);
+    const windSpeedEl = document.getElementById('current-wind-speed');
+    const windDirEl = document.getElementById('current-wind-dir');
+    const humidityEl = document.getElementById('detail-humidity');
+    const uvEl = document.getElementById('detail-uv');
+    const visibilityEl = document.getElementById('detail-visibility');
+    const detailWindDirEl = document.getElementById('detail-wind-dir');
 
-    if (document.getElementById('detail-humidity'))
-        document.getElementById('detail-humidity').innerText = `${humidity}%`;
-    if (document.getElementById('detail-uv'))
-        document.getElementById('detail-uv').innerText = uv;
-    if (document.getElementById('detail-visibility'))
-        document.getElementById('detail-visibility').innerText = `${visibility} km`;
-
-    const windDirEl = document.getElementById('detail-wind-dir');
-    if (windDirEl) {
-        windDirEl.innerText = `${windDir}° ${getCardinalDirection(windDir)}`;
-    }
-
-    console.log("Wind Dir Raw:", windDir);
-    console.log("Wind Speed Raw:", windSpd);
+    if (windSpeedEl) windSpeedEl.innerText = windKph;
+    if (windDirEl) windDirEl.innerText = getCardinalDirection(windDir);
+    if (humidityEl) humidityEl.innerText = `${humidity}%`;
+    if (uvEl) uvEl.innerText = uv;
+    if (visibilityEl) visibilityEl.innerText = `${visibility} km`;
+    if (detailWindDirEl) detailWindDirEl.innerText = `${windDir}° ${getCardinalDirection(windDir)}`;
 }
 
 //Convert degrees to NSEW
@@ -552,8 +564,8 @@ function updateNavbarBasedOnRole() {
 // REPORTS - report.html
 function renderReports() {
     const container = document.getElementById('reports-list');
-    if (!container) return; 
-    
+    if (!container) return;
+
     if (typeof reportsData === 'undefined' || !reportsData || reportsData.length === 0) {
         container.innerHTML = `
             <div class="no-reports-container">
@@ -562,9 +574,9 @@ function renderReports() {
                 <p class="text-muted">There are no hazards reported at Bagasbas Beach today.</p>
             </div>
         `;
-        return; 
+        return;
     }
-    
+
     container.innerHTML = reportsData.map(report => {
         const isDangerous = report.status.toLowerCase() === 'dangerous';
         const accentColor = isDangerous ? '#ff311f' : '#ffc107';
@@ -575,7 +587,7 @@ function renderReports() {
                 <div class="status-indicator" style="background-color: ${accentColor}"></div>
                 <div class="entry-body">
                     <div class="row g-0 align-items-start">
-                        
+
                         <div class="col-md-8 pe-3">
                             <span class="badge rounded-pill status-badge ${badgeClass} d-inline-block">
                                 ${report.status}
@@ -615,13 +627,13 @@ function renderReports() {
 // MY BOOKINGS - bookings.html
 function renderBookings() {
     const statuses = ['upcoming', 'completed', 'cancelled'];
-    
+
     statuses.forEach(status => {
         const listContainer = document.getElementById(`${status}-list`);
         if (!listContainer) return;
 
         const filtered = myBookings.filter(b => b.status === status);
-        listContainer.innerHTML = ''; 
+        listContainer.innerHTML = '';
 
         if (filtered.length === 0) {
             listContainer.innerHTML = `
@@ -646,7 +658,7 @@ function renderBookings() {
                         <span class="text-uppercase fw-bold small text-muted">${booking.day}</span>
                         <span class="fs-2 fw-bold lh-1" style="color: #002266;">${booking.num}</span>
                     </div>
-                    
+
                     <div class="flex-grow-1 ps-4">
                         <h5 class="fw-bold mb-1">${booking.tourist_name}</h5>
                         <p class="text-muted small mb-0"><i class="bi bi-clock me-2"></i>${booking.time}</p>
@@ -671,9 +683,9 @@ function showDetails(id) {
         document.getElementById('detail-email').innerText = booking.email;
         document.getElementById('detail-datetime').innerText = `${booking.day}, May ${booking.num} | ${booking.time}`;
         document.getElementById('detail-location').innerText = booking.location;
-        
+
         const btnContainer = document.getElementById('complete-btn-container');
-        
+
         if (booking.status === 'upcoming') {
             btnContainer.innerHTML = `
                 <button class="btn btn-success w-100 rounded-pill" onclick="completeBooking('${booking.id}')">
@@ -691,16 +703,16 @@ function showDetails(id) {
 
 function completeBooking(id) {
     const bookingIndex = myBookings.findIndex(b => b.id === id);
-    
+
     if (bookingIndex !== -1) {
         myBookings[bookingIndex].status = 'completed';
-        
+
         const modalElement = document.getElementById('detailsModal');
         const modalInstance = bootstrap.Modal.getInstance(modalElement);
         modalInstance.hide();
 
         renderBookings();
-        
+
         alert("Lesson marked as completed!");
     }
 }
@@ -713,10 +725,10 @@ let trainerModal;
 // SHOWCASES THE WEEKLY AVAILABILITY
 function getWeeklyStatus(dayAbbreviation, activeDays) {
     const daysMap = { 'SU': 0, 'M': 1, 'T': 2, 'W': 3, 'TH': 4, 'F': 5, 'S': 6 };
-    const today = new Date().getDay(); 
+    const today = new Date().getDay();
     const targetDay = daysMap[dayAbbreviation];
-    
-    if (targetDay < today) return 'past'; 
+
+    if (targetDay < today) return 'past';
     return activeDays.includes(dayAbbreviation) ? 'active' : 'inactive';
 }
 
@@ -726,9 +738,9 @@ function renderTrainers() {
 
     if (!list) {
         console.warn("Element 'trainers-list' not found on this page.");
-        return; 
+        return;
     }
-    
+
     const placeholder = "https://placehold.co/400x500/00167A/FFFFFF?text=SurfSafe+Trainer";
 
     list.innerHTML = trainersData.map((trainer, index) => `
@@ -763,7 +775,7 @@ function openTrainerDetails(index) {
 
    document.querySelectorAll('.nav-arrow').forEach(btn => btn.classList.remove('d-none'));
 
-    const expertiseChips = trainer.expertise.map(skill => 
+    const expertiseChips = trainer.expertise.map(skill =>
         `<span class="expertise-chip">${skill}</span>`
     ).join('');
 
@@ -774,7 +786,7 @@ function openTrainerDetails(index) {
             </div>
             <div class="col-md-7 p-4">
                 <h2 class="fw-bold text-navy mb-3">${trainer.name.toUpperCase()}</h2>
-                
+
                 <div class="row mb-4">
                     <div class="col-6">
                         <small class="text-muted d-block fw-bold">EXPERIENCE</small>
@@ -808,7 +820,7 @@ function openTrainerDetails(index) {
                         }).join('')}
                     </div>
                 </div>
-                
+
                 <button class="btn btn-navy w-100 py-2 fw-bold mt-2" onclick="startBooking(${index})">Book</button>
             </div>
         </div>
@@ -828,7 +840,7 @@ function startBooking(index) {
         <div class="p-4">
             <div class="d-flex align-items-center mb-4">
                 <button class="btn btn-sm btn-outline-secondary me-3" onclick="openTrainerDetails(${index})">
-                    <i class="bi bi-arrow-left"></i> 
+                    <i class="bi bi-arrow-left"></i>
                 </button>
                 <h4 class="fw-bold text-navy mb-0">Booking for ${trainer.name}</h4>
             </div>
@@ -860,18 +872,18 @@ function startBooking(index) {
     const timeSelect = document.getElementById('bookTime');
 
     dateInput.addEventListener('change', (e) => {
-        const selectedDate = e.target.value; 
+        const selectedDate = e.target.value;
         const slots = trainer.schedules ? trainer.schedules[selectedDate] : null;
         if (slots) {
             timeSelect.disabled = false;
-            timeSelect.innerHTML = '<option value="" selected disabled>Choose a slot...</option>' + 
+            timeSelect.innerHTML = '<option value="" selected disabled>Choose a slot...</option>' +
                 slots.map(s => `<option value="${s}">${s}</option>`).join('');
         } else {
             timeSelect.disabled = true;
             timeSelect.innerHTML = '<option value="" selected disabled>No shifts for this date</option>';
         }
     });
-    
+
     trainerModal.show();
 }
 
@@ -909,15 +921,15 @@ function renderTouristBookings() {
 
     touristActivityData.forEach(booking => {
         const isUpcoming = booking.status === 'upcoming';
-        
-        let statusColor = 'text-muted'; 
+
+        let statusColor = 'text-muted';
         if (booking.status === 'completed') statusColor = 'text-success';
         if (booking.status === 'cancelled') statusColor = 'text-danger';
 
         const activityHTML = `
             <div class="booking-item p-3 mb-3 border rounded shadow-sm bg-white">
                 <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center">
-                    
+
                     <div class="flex-grow-1 w-100">
                         <div class="d-flex justify-content-between align-items-center mb-1">
                             <h6 class="fw-bold mb-0">${booking.trainerName}</h6>
@@ -930,7 +942,7 @@ function renderTouristBookings() {
                             <p class="text-muted mb-0 small text-break"><i class="bi bi-envelope me-2"></i>${booking.trainerEmail}</p>
                             <p class="text-muted mb-0 small"><i class="bi bi-telephone me-2"></i>${booking.trainerPhone}</p>
                         </div>
-                       
+
                         <div class="row g-0">
                             <div class="col-12 mb-1">
                                 <p class="text-muted mb-0 small">
@@ -949,10 +961,10 @@ function renderTouristBookings() {
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="booking-action-container mt-3 mt-sm-0 ms-sm-3 text-sm-end border-sm-0">
                         ${isUpcoming ? `
-                            <button class="btn btn-sm btn-outline-danger px-4 rounded-pill btn-cancel-responsive" 
+                            <button class="btn btn-sm btn-outline-danger px-4 rounded-pill btn-cancel-responsive"
                                     onclick="cancelBookingAction('${booking.id}')">
                                 <i class="bi bi-x-circle me-2"></i>Cancel
                             </button>
@@ -973,14 +985,14 @@ function renderTouristBookings() {
 
 function cancelBookingAction(bookingId) {
     const confirmCancel = confirm(`Are you sure you want to cancel booking ${bookingId}?`);
-    
+
     if (confirmCancel) {
         const index = touristActivityData.findIndex(b => b.id === bookingId);
         if (index !== -1) {
             touristActivityData[index].status = 'cancelled';
-            
+
             alert("Booking Cancelled!");
-            renderTouristBookings(); 
+            renderTouristBookings();
         }
     }
 }
@@ -1054,7 +1066,7 @@ function renderMyReports() {
     container.innerHTML = myReportsData.map(report => {
         const isApproved = report.verification_status === 'Approved';
         const badgeClass = isApproved ? 'bg-success' : 'bg-warning text-dark';
-        
+
         return `
             <div class="report-item p-3 mb-3 border rounded shadow-sm bg-white">
                 <div class="d-flex justify-content-between align-items-start mb-2">
@@ -1093,7 +1105,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     fetchMarineData();
-
     updateNavbarBasedOnRole();
 
     // DATA PRIVACY ACT AND TERM AND CONDITION TAB SWITCHING
@@ -1130,7 +1141,7 @@ document.addEventListener('DOMContentLoaded', () => {
     trainerButtons.forEach(button => {
         button.addEventListener('click', (e) => {
             if (!isLoggedIn) {
-                e.preventDefault(); 
+                e.preventDefault();
                 const authModalEl = document.getElementById('authNudgeModal');
                 if (authModalEl) {
                     const authModal = new bootstrap.Modal(authModalEl);
@@ -1162,7 +1173,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // PROFILE PAGE LOGIC
     if (document.getElementById('trainerName')) {
     loadProfileData();
-    setupProfileActions(); 
+    setupProfileActions();
 
     const userRole = localStorage.getItem('userRole');
 
@@ -1172,11 +1183,11 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('experience-section')?.classList.add('d-none');
         document.getElementById('trainer-info-card')?.classList.add('d-none');
 
-        // SHOW DASHBOARD FOR TOURIST 
+        // SHOW DASHBOARD FOR TOURIST
         const touristCard = document.getElementById('tourist-activity-card');
         if (touristCard) {
             touristCard.classList.remove('d-none');
-            renderTouristBookings(); 
+            renderTouristBookings();
         }
 
         const sideCardTitle = document.getElementById('sideCardTitle');
@@ -1192,7 +1203,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('profile-header-section')?.classList.remove('d-none');
         document.getElementById('trainer-info-card')?.classList.remove('d-none');
         document.getElementById('tourist-activity-card')?.classList.add('d-none');
-        
+
         if (typeof renderMyReports === "function") renderMyReports();
     }
 }
