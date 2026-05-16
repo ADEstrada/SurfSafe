@@ -1,3 +1,11 @@
+<?php
+session_start();
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'Admin') {
+    header("Location: login.html");
+    exit();
+}
+?>
+
 <!DOCTYPE html>
 
 <html lang="en">
@@ -40,7 +48,7 @@
             </ul>
 
             <div class="p-3 border-top">
-                <a href="index.html" class="btn btn-exit-admin w-100 btn-sm">
+                <a href="index.php" class="btn btn-exit-admin w-100 btn-sm">
                     <i class="bi bi-box-arrow-left"></i> Exit to Site
                 </a>
             </div>
@@ -302,7 +310,7 @@
         </main>
 
         <!-- POP UP FOR ASSIGNING SCHEDULE -->
-        <div class="modal fade" id="assignShiftModal" tabindex="-1" aria-hidden="true">
+       <div class="modal fade" id="assignShiftModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content border-0 shadow">
                     <div class="modal-header border-0">
@@ -311,23 +319,26 @@
                     </div>
                     <div class="modal-body">
                         <form id="assignShiftForm">
-                            <div class="mb-4">
-                                <div class="search-container w-100">
-                                    <i class="bi bi-search"></i>
-                                    <input type="text" list="trainerList" class="form-control search-input w-100" placeholder="Type trainer name..." required>
-                                    <datalist id="trainerList"></datalist>
-                                </div>
+                            
+                            <div class="mb-4 position-relative">
+                                <label for="trainerSearchInput" class="form-label small fw-bold">Assign Trainer</label>
+                                <input type="text" id="trainerSearchInput" class="form-control modal-input" placeholder="Type trainer name..." autocomplete="off" required>
+                                
+                                <input type="hidden" id="selectedTrainerId" name="user_id">
+                                
+                                <div id="trainerSuggestionsList" class="list-group position-absolute w-100 shadow-lg d-none" style="z-index: 1050; max-height: 200px; overflow-y: auto; top: 100%;"></div>
                             </div>
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label small fw-bold">Start Time</label>
-                                    <input type="time" class="form-control modal-input" required>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label small fw-bold">Start Time</label>
+                                        <input type="time" id="shiftStartTime" class="form-control modal-input" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label small fw-bold">End Time</label>
+                                        <input type="time" id="shiftEndTime" class="form-control modal-input" required>
+                                    </div>
                                 </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label small fw-bold">End Time</label>
-                                    <input type="time" class="form-control modal-input" required>
-                                </div>
-                            </div>
                             <div class="alert alert-info border-0 mt-3 modal-alert">
                                 <small class="d-block">
                                     <i class="bi bi-info-circle-fill"></i> This schedule will immediately be visible for booking.
@@ -372,6 +383,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="admin-script.js"></script>
+    <script src="admin-script.js?v=5"></script>
 </body>
 </html>

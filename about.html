@@ -36,7 +36,7 @@
                         <a href="hazard_map.html">Hazard Map</a>
                         <a href="report.html">Report</a>
                         <a href="about.html" class="active">About</a>
-                        <a href="trainers.html" id="nav-book-trainer" class="d-none">Trainers</a>
+                        <a href="trainers.php" id="nav-book-trainer" class="<?php echo ($user_role === 'Admin') ? 'd-none' : ''; ?>">Trainers</a>
                         <a href="my_bookings.html" id="nav-my-bookings" class="d-none">My Bookings</a>
                     </nav>
 

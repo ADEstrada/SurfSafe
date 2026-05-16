@@ -10,6 +10,16 @@
         *SCRIPT FOR ADMIN IS IN admin-script.js AND CSS FOR ADMIN is in admin.css
 */
 
+// ADDED THIS TO HOLD THE DATA FETCHED FROM THE DATABASE FOR PENDING TRAINER APPLICATIONS AND REPORTS, AS WELL AS THE MONTHLY STATS FOR BOOKINGS - LYZETTE
+let data = {
+    pending: [],
+    verified: [],
+    reports: [],
+    monthlyStats: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+};
+
+const currentWave = 1.2; // MOCK FOR THE CURRENT STATUS IN DASHBOARD
+
 function switchAdminTab(tabName, element) {
     const sections = document.querySelectorAll('.admin-tab-content');
     sections.forEach(section => {
@@ -77,7 +87,9 @@ function renderCalendar() {
     const totalDays = lastDayOfMonth.getDate();
     for (let i = 1; i <= totalDays; i++) {
         const date = new Date(year, month, i);
-        const dateISO = date.toISOString().split('T')[0];
+        const offset = date.getTimezoneOffset();
+        const localDate = new Date(date.getTime() - (offset * 60 * 1000));
+        const dateISO = localDate.toISOString().split('T')[0];
         const isToday = date.toDateString() === new Date().toDateString();
 
         const dayLabel = date.toLocaleString('default', { weekday: 'short' });
@@ -107,7 +119,24 @@ function changeMonth(direction) {
     renderCalendar();
 }
 
+// THIS FUNCTION OPENS THE ASSIGN SHIFT MODAL AND SETS THE TARGET DATE FOR WHICH THE SHIFT IS BEING ASSIGNED - LYZETTE
+let modalTargetDateISO = '';
 function openAssignModal(dateString) {
+    modalTargetDateISO = dateString;
+    
+    const searchInput = document.getElementById('trainerSearchInput');
+    const hiddenIdInput = document.getElementById('selectedTrainerId');
+    const suggestionsList = document.getElementById('trainerSuggestionsList');
+    const shiftForm = document.getElementById('assignShiftForm');
+    
+    if (searchInput) searchInput.value = '';
+    if (hiddenIdInput) hiddenIdInput.value = '';
+    if (suggestionsList) {
+        suggestionsList.innerHTML = '';
+        suggestionsList.classList.add('d-none');
+    }
+    if (shiftForm) shiftForm.reset();
+
     const modal = new bootstrap.Modal(document.getElementById('assignShiftModal'));
     modal.show();
 }
@@ -119,25 +148,70 @@ let currentDocIndex = 0;
 const docTypes = ['dotCert', 'trainingCert', 'waterSafety', 'nbiClearance', 'drugTest'];
 let applicationVerdicts = {};
 
+// UPDATED THIS FUNCTION TO OPEN THE DOCUMENT REVIEW MODAL WITH THE CORRECT APPLICANT DATA AND DOCUMENT - LYZETTE
 function viewDoc(docType, appId) {
+    console.log("Button clicked! Looking for ID:", appId);
+    
     currentReviewingAppId = appId;
     currentDocIndex = docTypes.indexOf(docType);
-    
+
     if (!applicationVerdicts[appId]) {
         applicationVerdicts[appId] = {};
     }
-    
-    const applicant = data.pending.find(a => a.id === appId);
-    document.getElementById('reviewerApplicantName').innerText = `Reviewing: ${applicant.name}`;
-    
-    updateModalDocDisplay();
-    const reviewModal = new bootstrap.Modal(document.getElementById('documentReviewModal'));
-    reviewModal.show();
+
+    const cleanAppId = String(appId).trim();
+    const applicant = data.pending.find(a => String(a.id).trim() === cleanAppId);
+
+    if (applicant) {
+        document.getElementById('reviewerApplicantName').innerText = `Reviewing: ${applicant.name}`;
+        updateModalDocDisplay();
+
+        const modalEl = document.getElementById('documentReviewModal');
+        if (modalEl) {
+            const reviewModal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            reviewModal.show();
+        }
+    } else {
+        alert(`System Error: Could not find applicant with ID: ${appId}. Check the console.`);
+    }
 }
 
+// UPDATED BACKEND FOR FETCHING AND DISPLAYING DOCUMENTS IN THE MODAL, AS WELL AS HANDLING APPROVAL/REJECTION OF EACH FILE - LYZETTE
 function updateModalDocDisplay() {
     const appId = currentReviewingAppId;
-    const docLabel = docTypes[currentDocIndex];
+    const docLabel = docTypes[currentDocIndex]; 
+
+    const cleanAppId = String(appId).trim();
+    const applicant = data.pending.find(a => String(a.id).trim() === cleanAppId);
+    if (!applicant) return;
+
+    const fileName = applicant.docs[docLabel]; 
+    const previewArea = document.getElementById('documentFrame');
+
+    if (!fileName || fileName.trim() === "") {
+        previewArea.innerHTML = `
+            <div class="p-5 text-center bg-light border-bottom" style="min-height: 400px; display: flex; flex-direction: column; justify-content: center;">
+                <i class="bi bi-file-earmark-x text-muted" style="font-size: 4rem;"></i>
+                <h5 class="mt-3 text-muted fw-bold">No Document Uploaded</h5>
+                <p class="small text-muted">The applicant did not provide this file during signup.</p>
+            </div>
+        `;
+    } else {
+        const filePath = `uploads/${fileName}`; 
+        
+        previewArea.innerHTML = `
+            <div class="w-100 text-center bg-dark" style="height: 65vh; overflow: hidden;">
+                <iframe src="${filePath}" width="100%" height="100%" style="border: none;">
+                    <p>Your browser does not support PDFs.</p>
+                </iframe>
+            </div>
+            <div class="text-center p-2 bg-light border-bottom">
+                <a href="${filePath}" target="_blank" class="btn btn-sm btn-outline-primary fw-bold">
+                    <i class="bi bi-box-arrow-up-right"></i> Open File in New Tab
+                </a>
+            </div>
+        `;
+    }
 
     const friendlyNames = {
         'dotCert': 'DOT Accreditation',
@@ -147,43 +221,19 @@ function updateModalDocDisplay() {
         'drugTest': 'Drug Test Result'
     };
     
-    const displayName = friendlyNames[docLabel] || 'Unknown Document';
-
-    document.getElementById('currentDocLabel').innerText = `Document: ${displayName}`;
+    document.getElementById('currentDocLabel').innerText = `Document: ${friendlyNames[docLabel] || 'Unknown'}`;
     document.getElementById('docCounter').innerText = `${currentDocIndex + 1} / ${docTypes.length}`;
 
-    const previewArea = document.getElementById('documentFrame');
-
-    /* BACKEND DEVELOPER: 
-            REPLACE THIS FILE PATH LOGIC WITH YOUR ACTUAL SERVER-SIDE STORAGE PATH OR API ENDPOINT.
-    */
-    const filePath = `assets/documents/${appId}_${docLabel}`; 
-
-    previewArea.innerHTML = `
-    <div class="scrollable-content w-100 text-center" style="min-height: 1000px;">
-        <object data="${filePath}.pdf" type="application/pdf" width="100%" style="min-height: 800px;">
-            <img src="${filePath}.jpg" class="img-fluid rounded shadow-sm" alt="Document Preview" 
-                 onerror="this.onerror=null; this.src='${filePath}.png';">
-            
-            <div class="onerror-fallback p-5 text-white">
-                <i class="bi bi-file-earmark-exclamation shadow-sm" style="font-size: 3rem;"></i>
-                <p class="mt-3">File format not supported or file not found.</p>
-                <a href="${filePath}.pdf" target="_blank" class="btn btn-light btn-sm">Try downloading file</a>
-            </div>
-        </object>
-    </div>
-    `;
-
-    const currentStatus = applicationVerdicts[appId][docLabel] || 'Pending';
+    const currentStatus = applicationVerdicts[appId] ? applicationVerdicts[appId][docLabel] : 'Pending';
     const footerAction = document.getElementById('docActionButtons');
     
     footerAction.innerHTML = `
         <div class="d-flex justify-content-center gap-3">
-            <button class="btn ${currentStatus === 'Approved' ? 'btn-success' : 'btn-outline-success'} fw-bold" 
+            <button class="btn ${currentStatus === 'Approved' ? 'btn-success' : 'btn-outline-success'} fw-bold px-4" 
                 onclick="setFileVerdict('${docLabel}', 'Approved')">
                 <i class="bi bi-check-lg"></i> Approve File
             </button>
-            <button class="btn ${currentStatus === 'Rejected' ? 'btn-danger' : 'btn-outline-danger'} fw-bold" 
+            <button class="btn ${currentStatus === 'Rejected' ? 'btn-danger' : 'btn-outline-danger'} fw-bold px-4" 
                 onclick="setFileVerdict('${docLabel}', 'Rejected')">
                 <i class="bi bi-x-lg"></i> Reject File
             </button>
@@ -191,11 +241,25 @@ function updateModalDocDisplay() {
     `;
 }
 
+// UPDATED THIS FUNCTION TO SET THE VERDICT FOR EACH FILE, CHECK THE OVERALL STATUS OF THE APPLICATION, AND NAVIGATE TO THE NEXT FILE IF APPROVED - LYZETTE
 function setFileVerdict(docLabel, verdict) {
     const appId = currentReviewingAppId;
     applicationVerdicts[appId][docLabel] = verdict;
+    
     updateModalDocDisplay();
+    
     checkOverallStatus(appId);
+    
+    if (verdict === 'Approved') {
+        const verdicts = Object.values(applicationVerdicts[appId]);
+        const totalFiles = docTypes.length;
+        
+        if (verdicts.length < totalFiles || verdicts.includes('Pending')) {
+            setTimeout(() => {
+                navDoc(1);
+            }, 500); 
+        }
+    }
 }
 
 function checkOverallStatus(appId) {
@@ -210,20 +274,37 @@ function checkOverallStatus(appId) {
     }
 }
 
-/**
- * FINALIZE VERDICT
- * FOR BACKEND: IF STATUS APPROVED, MOVE THE TRAINER DATA FROM PENDING TO 
- * VERIFIED TABLE IN THE DATABASE
- */
+// DONE UPDATING BACKEND FOR FINALIZING THE VERDICT AND UPDATING THE UI CARD IN PENDING APPLICATIONS - LYZETTE
 function finalizeVerdict(appId, status) {
     const statusColor = status === 'Approved' ? '#198754' : '#dc3545';
     const card = document.getElementById(`app-${appId}`);
     
+    fetch(`process_trainer.php?id=${appId}&status=${status}`)
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                const modalEl = document.getElementById('documentReviewModal');
+                if (modalEl) {
+                    const reviewModal = bootstrap.Modal.getInstance(modalEl);
+                    if (reviewModal) reviewModal.hide();
+                }
+                updateUICard(card, status, statusColor, appId);
+            } else {
+                alert("Error processing application: " + result.message);
+            }
+        })
+        .catch(error => {
+            console.error('Fetch Error:', error);
+            alert("Network error. Could not reach the server.");
+        });
+}
+
+function updateUICard(card, status, color, appId) {
     if (card) {
         card.innerHTML = `
             <div class="row align-items-center py-2">
                 <div class="col-12 text-center">
-                    <h5 class="mb-0 fw-bold" style="color: ${statusColor}">
+                    <h5 class="mb-0 fw-bold" style="color: ${color}">
                         <i class="bi ${status === 'Approved' ? 'bi-check-circle-fill' : 'bi-x-circle-fill'}"></i> 
                         RESULT: ${status.toUpperCase()}
                     </h5>
@@ -237,17 +318,16 @@ function finalizeVerdict(appId, status) {
             card.style.transform = "translateX(20px)"; 
             
             setTimeout(() => {
-                data.pending = data.pending.filter(app => app.id !== appId);
+                const cleanAppId = String(appId).trim();
+                data.pending = data.pending.filter(app => String(app.id).trim() !== cleanAppId);
+                
                 renderPendingApplications();
+                
+                const badge = document.getElementById('stat-pending-approvals');
+                if (badge) badge.innerText = data.pending.length;
             }, 500);
-        }, 3000); 
+        }, 2000); 
     }
-    
-    setTimeout(() => {
-        const modalEl = document.getElementById('documentReviewModal');
-        const modalInstance = bootstrap.Modal.getInstance(modalEl);
-        if (modalInstance) modalInstance.hide();
-    }, 800);
 }
 
 function navDoc(direction) {
@@ -460,21 +540,104 @@ function initBookingsChart() {
     });
 }
 
+// UPDATED THIS FOR FETCHING REAL DATA FOR PENDING TRAINER APPLICATIONS AND REPORTS, AS WELL AS INITIALIZING THE DASHBOARD WITH REAL-TIME STATUS - LYZETTE
 document.addEventListener('DOMContentLoaded', () => {
     renderCalendar();
-    renderPendingApplications(); 
     renderReportsQueue();
     updateTrainerDatalist();
     initBookingsChart();
 
-    updateDashboardStatus(currentWave, data.reports);
+    setTimeout(fetchAndRenderCalendarShifts, 200);
+
+// FETCH APPROVED TRAINERS COUNT DIRECTLY FROM DB ON LOAD - LYZETTE
+    fetch('get_total_completed_trainers.php')
+        .then(response => response.json())
+        .then(statsData => { 
+            if (statsData.success) {
+                const mainDashboardCard = document.getElementById('stat-total-trainers');
+                if (mainDashboardCard) {
+                    mainDashboardCard.innerText = statsData.count;
+                }
+
+                const trainersTabCard = document.getElementById('stat-total-trainers-list');
+                if (trainersTabCard) {
+                    trainersTabCard.innerText = statsData.count;
+                }
+            }
+        })
+        .catch(error => console.error('Error fetching approved trainers count:', error));
+
+    
+    // PROCESS NEW SHIFT SUBMISSIONS - LYZETTE
+    const shiftForm = document.getElementById('assignShiftForm');
+    if (shiftForm) {
+        shiftForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const trainerId = document.getElementById('selectedTrainerId').value;
+            const shiftDate = modalTargetDateISO; 
+            
+            const startTime = document.getElementById('shiftStartTime').value;
+            const endTime = document.getElementById('shiftEndTime').value;
+
+            if (!trainerId) {
+                alert("Please select a trainer from the autocomplete list before confirming!");
+                return;
+            }
+
+            const payload = new FormData();
+            payload.append('user_id', trainerId);
+            payload.append('shift_date', shiftDate);
+            payload.append('start_time', startTime);
+            payload.append('end_time', endTime);
+
+            fetch('save_trainer_shift.php', { method: 'POST', body: payload })
+                .then(res => {
+                    if (!res.ok) throw new Error("HTTP Status: " + res.status);
+                    return res.json();
+                })
+                .then(result => {
+                    if (result.success) {
+                        alert("Shift allocated successfully!");
+                        
+                        const modalElement = document.getElementById('assignShiftModal');
+                        const modalInstance = bootstrap.Modal.getInstance(modalElement);
+                        if (modalInstance) modalInstance.hide();
+                        
+                        shiftForm.reset();
+                        
+                        fetchAndRenderCalendarShifts(); 
+                    } else {
+                        alert("Allocation Error: " + result.message);
+                    }
+                })
+                .catch(error => {
+                    console.error("Submission Failure:", error);
+                    alert("Network processing error. Verify that save_trainer_shift.php exists.");
+                });
+        });
+    }
+
+    fetch('get_pending_trainers.php')
+            .then(response => response.json())
+            .then(pendingData => {
+                data.pending = pendingData; 
+                
+                renderPendingApplications();
+                
+                const pendingBadge = document.getElementById('stat-pending-approvals');
+                if(pendingBadge) pendingBadge.innerText = data.pending.length;
+            })
+            .catch(error => console.error('Error fetching trainers:', error));
+
+        updateDashboardStatus(currentWave, data.reports);
 });
 
 //  DUMMY DATA - FOR TESTING ONLY 
 
-const currentWave = 1.2; // MOCK FOR THE CURRENT STATUS IN DASHBOARD
+ // MOCK FOR THE CURRENT STATUS IN DASHBOARD
 
-// MOCK FOR THE APPLICANTS
+/* MOCK FOR THE APPLICANTS
 const data = {
     pending: [
         { id: 1, name: "Juan Dela Cruz", appliedDate: "Oct 12, 2024" },
@@ -504,4 +667,171 @@ const data = {
 
     // MOCK FOR THE GRAPH IN DASHBOARD
     monthlyStats: [12, 19, 15, 25, 32, 45, 50, 38, 20, 15, 10, 22]
-};
+}; */
+
+// FETCH ONLY VERIFIED & COMPLETED TRAINERS FOR THE ADMIN BOOKING CALENDAR - LYZETTE
+function populateCompletedTrainersDropdown() {
+    const dropdown = document.getElementById('assignTrainerSelect');
+    if (!dropdown) return;
+
+    fetch('get_available_trainers.php')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                dropdown.innerHTML = '<option value="" selected disabled>-- Select an Available Trainer --</option>';
+                
+                if (data.trainers.length === 0) {
+                    dropdown.innerHTML = '<option value="" disabled>No trainers have completed profiles yet</option>';
+                    return;
+                }
+
+                data.trainers.forEach(trainer => {
+                    dropdown.innerHTML += `
+                        <option value="${trainer.user_id}">
+                            ${trainer.name} (${trainer.specialization} - ${trainer.experience} Yrs Exp)
+                        </option>
+                    `;
+                });
+            } else {
+                console.error("Admin Error:", data.message);
+            }
+        })
+        .catch(error => console.error("Network Fetch Error:", error));
+}
+
+// INITIALIZE COMPLETED TRAINER AUTCOMPLETE DISPLAYER - LYZETTE
+document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('trainerSearchInput');
+    const suggestionsList = document.getElementById('trainerSuggestionsList');
+    const hiddenIdInput = document.getElementById('selectedTrainerId');
+
+    if (!searchInput || !suggestionsList) return;
+
+    searchInput.addEventListener('input', function() {
+        const value = this.value.trim();
+
+        if (value.length === 0) {
+            suggestionsList.innerHTML = '';
+            suggestionsList.classList.add('d-none');
+            hiddenIdInput.value = '';
+            return;
+        }
+
+        fetch(`get_completed_trainers.php?term=${encodeURIComponent(value)}`)
+            .then(response => response.json())
+            .then(trainers => {
+                suggestionsList.innerHTML = '';
+
+                if (trainers.length === 0) {
+                    suggestionsList.innerHTML = `<div class="list-group-item text-muted small py-2">No completed trainer profiles found</div>`;
+                    suggestionsList.classList.remove('d-none');
+                    return;
+                }
+
+                trainers.forEach(trainer => {
+                    const listItem = document.createElement('a');
+                    listItem.href = '#';
+                    listItem.className = 'list-group-item list-group-item-action py-2 px-3 small d-flex flex-column';
+                    listItem.innerHTML = `
+                        <span class="fw-bold text-dark">${trainer.name}</span>
+                        <span class="text-muted extra-small" style="font-size: 0.75rem;">${trainer.email}</span>
+                    `;
+
+                    listItem.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        
+                        searchInput.value = trainer.name;
+                        
+                        hiddenIdInput.value = trainer.id;
+                        
+                        suggestionsList.innerHTML = '';
+                        suggestionsList.classList.add('d-none');
+                    });
+                    suggestionsList.appendChild(listItem);
+                });
+                suggestionsList.classList.remove('d-none');
+            })
+            .catch(error => console.error("Autocomplete compilation breakdown:", error));
+    });
+
+    document.addEventListener('click', function(e) {
+        if (e.target !== searchInput && e.target !== suggestionsList) {
+            suggestionsList.innerHTML = '';
+            suggestionsList.classList.add('d-none');
+        }
+    });
+});
+
+// RENDER ALL TRAINERS AND DISPLAY APPROVED STATUS COUNTS - LYZETTE
+function renderTrainers() {
+    const list = document.getElementById('trainers-list');
+    if (!trainersData || trainersData.length === 0) return;
+
+    const approvedCount = trainersData.filter(trainer => trainer.profile_completed == 1 || trainer.hasProfile === true).length;
+
+    const mainDashboardCard = document.getElementById('stat-total-trainers');
+    if (mainDashboardCard) {
+        mainDashboardCard.innerText = approvedCount;
+        const label = mainDashboardCard.nextElementSibling;
+        if (label) label.innerText = "Verified & Active Profiles";
+    }
+
+    const trainersTabCard = document.getElementById('stat-total-trainers-list');
+    if (trainersTabCard) {
+        trainersTabCard.innerText = approvedCount;
+        const labelList = trainersTabCard.nextElementSibling;
+        if (labelList) labelList.innerText = "Completed Profiles Displayed";
+    }
+
+    if (!list) return;
+    
+    const placeholder = "https://placehold.co/400x500/00167A/FFFFFF?text=SurfSafe+Trainer";
+    list.innerHTML = trainersData.map((trainer, index) => `
+        <div class="col-12 col-md-4 mb-4">
+            <div class="trainer-card-fixed shadow-sm" onclick="openTrainerDetails(${index})" style="cursor: pointer;">
+                <div class="trainer-img-container">
+                    <img src="${trainer.image || placeholder}" class="trainer-img-top" alt="${trainer.name}">
+                </div>
+                <div class="p-3 text-center">
+                    <h5 class="trainer-name-text">${trainer.name}</h5>
+                    <div class="availability-row my-2">
+                        ${['M', 'T', 'W', 'TH', 'F', 'S', 'SU'].map(day => {
+                            const isActive = trainer.active_days.includes(day);
+                            return `<span class="day-dot ${isActive ? 'active' : 'inactive'}">${day}</span>`;
+                        }).join('')}
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-3 px-2">
+                        <span class="trainer-rate">Php ${trainer.rate.toLocaleString()}</span>
+                        <button class="btn-book-trainer" onclick="event.stopPropagation(); startBooking(${index})">Book</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+// FETCH SHIFTS AND POPULATE CALENDAR DAYS DYNAMICALLY - LYZETTE
+function fetchAndRenderCalendarShifts() {
+    fetch('get_trainer_shifts.php')
+        .then(res => res.json())
+        .then(shifts => {
+            renderCalendar();
+
+            shifts.forEach(shift => {
+                const daySlotContainer = document.getElementById(`slots-${shift.date}`);
+                if (daySlotContainer) {
+                    if (daySlotContainer.innerHTML.includes('Click to assign')) {
+                        daySlotContainer.innerHTML = '';
+                    }
+
+                    daySlotContainer.innerHTML += `
+                        <div class="p-1 mb-1 rounded text-white bg-primary small text-truncate" style="font-size: 10px; font-weight: 600; line-height: 1.2;">
+                            <i class="bi bi-person-fill"></i> ${shift.trainer_name}<br>
+                            <span class="opacity-75" style="font-size: 9px;">${shift.start_time} - ${shift.end_time}</span>
+                        </div>
+                    `;
+                }
+            });
+        })
+        .catch(error => console.error("Error compilation fetching calendar shifts:", error));
+}

@@ -35,7 +35,10 @@
                     </div>
                 </div>
 
-                <form id="signupForm">
+                <!-- UPDATED THE FORM - LYZETTE -->
+                <form id="signupForm" action="signup_process.php" method="POST" enctype="multipart/form-data">
+
+                    <input type="hidden" name="role" id="roleInput" value="Tourist">
                     <div class="form-body-wrapper">
                         
                         <div class="form-column">
@@ -44,24 +47,24 @@
                             <div class="name-row">
                                 <div class="form-group">
                                     <label for="firstName" class="form-label">First Name</label>
-                                    <input type="text" class="form-control" id="firstName" placeholder="Jane" required>
+                                    <input type="text" class="form-control" id="firstName" name="first_name" placeholder="Jane" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="lastName" class="form-label">Last Name</label>
-                                    <input type="text" class="form-control" id="lastName" placeholder="Doe" required>
+                                    <input type="text" class="form-control" id="lastName" name="last_name" placeholder="Doe" required>
                                 </div>
                             </div>
 
                             <!-- EMAIL FORM -->
                             <div class="form-group">
                                 <label for="email" class="form-label">Email Address</label>
-                                <input type="email" class="form-control" id="email" placeholder="name@company.com" required>
+                                <input type="email" class="form-control" id="email" name="email" placeholder="name@company.com" required>
                             </div>
 
                             <!-- PASSWORD FORM -->
                             <div class="form-group">
                                 <label for="password" class="form-label">Password</label>
-                                <input type="password" class="form-control" id="password" placeholder="••••••••" required>
+                                <input type="password" class="form-control" id="password" name="password" placeholder="••••••••" required>
                             </div>
 
                             <!-- CONFIRM PASSWORD FORM -->
@@ -71,34 +74,34 @@
                             </div>
                         </div>
 
-                        <!-- ADDITIONAL FIELDS FOR VERIFICATION -->
+                        <!-- ADDITIONAL FIELDS FOR VERIFICATION (UPDATED FIELDS HERE - LYZETTE) --> 
                         <div id="trainerFields" class="form-column trainer-docs">
                             <h5 class="upload-title">Professional Verification</h5>
                             <p class="upload-subtitle">Upload clear copies for admin approval.</p>
 
                             <div class="form-group">
                                 <label class="form-label">DOT Accreditation Cert/ID</label>
-                                <input type="file" class="form-control file-input" id="dotCert">
+                                <input type="file" class="form-control file-input" id="dotCert" name="dotCert">
                             </div>
 
                             <div class="form-group">
                                 <label class="form-label">Professional Training Cert</label>
-                                <input type="file" class="form-control file-input" id="trainingCert">
+                                <input type="file" class="form-control file-input" id="trainingCert" name="trainingCert">
                             </div>
 
                             <div class="form-group">
                                 <label class="form-label">Water Safety & First Aid Card</label>
-                                <input type="file" class="form-control file-input" id="waterSafety">
+                                <input type="file" class="form-control file-input" id="waterSafety" name="waterSafety">
                             </div>
 
                             <div class="form-group">
                                 <label class="form-label">Valid NBI Clearance</label>
-                                <input type="file" class="form-control file-input" id="nbiClearance">
+                                <input type="file" class="form-control file-input" id="nbiClearance" name="nbiClearance">
                             </div>
 
                             <div class="form-group">
                                 <label class="form-label">Negative Drug Test Result</label>
-                                <input type="file" class="form-control file-input" id="drugTest">
+                                <input type="file" class="form-control file-input" id="drugTest" name="drugTest">
                             </div>
                         </div>
 

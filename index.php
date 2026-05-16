@@ -1,3 +1,7 @@
+<?php
+session_start();
+?>
+
 <!DOCTYPE html>
 
 <html lang="en">
@@ -31,32 +35,41 @@
 
                 <div class="collapse navbar-collapse" id="surfNavbar">
                     <nav class="nav-pages mx-auto">
-                        <a href="index.html" class="active">Home</a>
+                        <a href="index.php" class="active">Home</a>
                         <a href="marine_data.html">Marine Data</a>
                         <a href="hazard_map.html">Hazard Map</a>
                         <a href="report.html">Report</a>
                         <a href="about.html">About</a>
-                        <a href="trainers.html" id="nav-book-trainer" class="d-none">Trainers</a>
-                        <a href="my_bookings.html" id="nav-my-bookings" class="d-none">My Bookings</a>
+                        <a href="trainers.php" id="nav-book-trainer" class="<?php echo ($user_role === 'Admin') ? 'd-none' : ''; ?>">Trainers</a>
+                        <a href="my_bookings.php" id="nav-my-bookings" class="d-none">My Bookings</a>
                     </nav>
 
-                    <div id="auth-controls" class="auth-buttons">
-                        <a href="login.html" class="btn-login">Login</a>
-                        <a href="signup.html" class="btn-signup">Sign Up</a>
-                    </div>
+                    <!-- BACKEND CHANGES - LYZETTE -->
+                    <div class="auth-wrapper">
+                        <?php if (!isset($_SESSION['user_id'])): ?>
+                            
+                            <div id="auth-controls" class="auth-buttons">
+                                <a href="login.html" class="btn-login">Login</a>
+                                <a href="signup.html" class="btn-signup">Sign Up</a>
+                            </div>
 
-                    <div id="user-profile-section">
-                        <div class="dropdown">
-                            <a href="#" class="profile-link d-flex align-items-center dropdown-toggle" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-person-circle profile-nav-icon"></i>
-                                <span class="ms-2">Profile</span>
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="profileDropdown">
-                                <li><a class="dropdown-item" href="profile.html"><i class="bi bi-pencil-square me-2"></i>Edit Profile</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><button class="dropdown-item text-danger" id="navLogoutBtn"><i class="bi bi-box-arrow-right me-2"></i>Logout</button></li>
-                            </ul>
-                        </div>
+                        <?php else: ?>
+                            
+                            <div id="user-profile-section">
+                                <div class="dropdown">
+                                    <a href="#" class="profile-link d-flex align-items-center dropdown-toggle" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="bi bi-person-circle profile-nav-icon"></i>
+                                        <span class="ms-2"><?php echo htmlspecialchars($_SESSION['first_name']); ?></span>
+                                    </a>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="profileDropdown">
+                                        <li><a class="dropdown-item" href="profile.php"><i class="bi bi-pencil-square me-2"></i>Edit Profile</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item text-danger" href="logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                        <?php endif; ?>
                     </div>
 
                 </div>
@@ -73,10 +86,10 @@
                 <h1 class="main-title">Surf Smarter,<br>Stay Safe in Bagasbas.</h1>
                 <p class="content-description">Bagasbas Beach's first integrated safety and surfing management platform. Explore, book, and surf with confidence.</p>
 
-                <div class="cta-btns">
-                    <a href="hazard_map.html" class="btn-safety"><i class="bi bi-shield-check"></i> Check Beach Safety</a>
-                    <a href="#" class="btn-trainer"><i class="bi bi-calendar-check"></i> Book a Trainer</a>
-                </div>
+                    <div class="cta-btns">
+                        <a href="hazard_map.html" class="btn-safety"><i class="bi bi-shield-check"></i> Check Beach Safety</a>
+                        <a href="#" class="btn-trainer btn-gatekeeper"><i class="bi bi-calendar-check"></i> Book a Trainer</a>
+                    </div>
 
                 <a href="#" class="photo-credit-btn" data-bs-toggle="tooltip" title="Photography by @Sebastian Concina">
                     <i class="bi bi-camera-fill"></i>
@@ -156,7 +169,7 @@
                     <h2 class="report-description">Be informed about Bagasbas current news and status as shown by the community’s reported hazards like rip currents, jellyfish, or debris.</h2>
 
                     <div class="report-actions">
-                        <a href="report.html" class="btn-see-reports">See Reports</a>
+                        <a href="report.html" class="btn-see-reports"><i class="bi bi-newspaper me-1"></i>See Reports</a>
                     </div>
 
                     <a href="#" class="photo-credit-btn" data-bs-toggle="tooltip" title="Photography by @Sebastian Concina">
@@ -186,7 +199,7 @@
                             <p class="trainer-section-description">Master the waves with the help of Bagasbas’ finest instructors. View profiles and book sessions directly through our platform.</p>
                             
                             <div class="mt-5">
-                                <a href="#" class="btn-see-trainers">See Trainers</a>
+                                <a href="#" class="btn-see-trainers btn-gatekeeper">See Trainers</a>
                             </div>
                         </div>
 
@@ -212,6 +225,39 @@
                         </div>
                         
                         <button type="button" class="btn btn-maybe-later mt-2" data-bs-dismiss="modal">Maybe Later</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- POPUP SET PROFILE -->
+        <div class="modal fade" id="touristFirstTimeModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg text-center" style="border-radius: 24px; overflow: hidden;">
+                    
+                    <div class="p-4 bg-primary text-white position-relative">
+                        <div class="position-absolute top-0 start-0 w-100 h-100 opacity-10" style="background-image: radial-gradient(circle, #fff 10%, transparent 11%); background-size: 12px 12px;"></div>
+                        <i class="bi bi-person-vcard fs-1 d-block mb-2 animate-bounce"></i>
+                        <h4 class="fw-bold mb-0" style="letter-spacing: 0.5px;">Setup Your Tourist Profile!</h4>
+                    </div>
+
+                    <div class="modal-body p-4 bg-white text-dark">
+                        <p class="fw-bold mb-2 text-dark" style="font-size: 1.1rem;">Welcome to SurfSafe Bagasbas!</p>
+                        <p class="text-muted small mb-4" style="line-height: 1.5;">
+                            To complete lesson bookings with our accredited local coaches securely, please take a quick moment to update your contact information first.
+                        </p>
+
+                        <div class="p-3 mb-4 rounded-3 d-flex align-items-start gap-2 text-start" style="background-color: #fff9e6; border-left: 4px solid #ffc107;">
+                            <i class="bi bi-exclamation-triangle-fill text-warning fs-5 mt-0.5"></i>
+                            <div class="small text-secondary">
+                                <strong class="text-dark d-block mb-0.5">Booking Feature Gated:</strong>
+                                You won't be able to lock in lesson schedules or receive onsite validation keys until a valid phone number is active in your database record.
+                            </div>
+                        </div>
+
+                        <a href="profile.php" class="btn btn-primary w-100 py-2.5 fw-bold rounded-pill shadow-sm d-flex align-items-center justify-content-center gap-2" style="font-size: 0.95rem;">
+                            <i class="bi bi-pencil-square"></i> Set Up Profile Now
+                        </a>
                     </div>
                 </div>
             </div>

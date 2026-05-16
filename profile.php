@@ -1,3 +1,13 @@
+<?php
+session_start();
+
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.html");
+    exit();
+}
+$user_role = $_SESSION['role'];
+$first_name = $_SESSION['first_name'];
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -27,63 +37,65 @@
 
             <div class="collapse navbar-collapse" id="surfNavbar">
                 <nav class="nav-pages mx-auto">
-                    <a href="index.html">Home</a>
+                    <a href="index.php">Home</a>
                     <a href="marine_data.html">Marine Data</a>
                     <a href="hazard_map.html">Hazard Map</a>
                     <a href="report.html">Report</a>
                     <a href="about.html">About</a>
-                    <a href="trainers.html" id="nav-book-trainer" class="d-none">Trainers</a>
-                    <a href="my_bookings.html" id="nav-my-bookings" class="d-none">My Bookings</a>
+                    <a href="trainers.php" id="nav-book-trainer" class="<?php echo ($user_role === 'Admin') ? 'd-none' : ''; ?>">Trainers</a>
+                    <a href="my_bookings.php" id="nav-my-bookings" class="<?php echo ($user_role === 'Trainer') ? '' : 'd-none'; ?>">My Bookings</a>
                 </nav>
 
-                <div id="user-profile-section" class="d-none">
+                <div id="user-profile-section">
                     <div class="dropdown">
                         <a href="#" class="profile-link d-flex align-items-center dropdown-toggle" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="bi bi-person-circle profile-nav-icon"></i>
-                            <span class="ms-2">Profile</span>
+                            <span class="ms-2"><?php echo htmlspecialchars($first_name); ?></span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="profileDropdown">
-                            <li><a class="dropdown-item" href="profile.html"><i class="bi bi-person-bounding-box me-2"></i>My Profile</a></li>
+                            <li><a class="dropdown-item" href="profile.php"><i class="bi bi-person-bounding-box me-2"></i>My Profile</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><button class="dropdown-item text-danger" id="navLogoutBtn"><i class="bi bi-box-arrow-right me-2"></i>Logout</button></li>
+                            <li><a class="dropdown-item text-danger" href="logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
                         </ul>
                     </div>
-                </div>
-
-                <div id="auth-controls" class="auth-buttons">
-                    <a href="login.html" class="btn-login">Login</a>
-                    <a href="signup.html" class="btn-signup">Sign Up</a>
                 </div>
             </div>
         </div>
     </header>
 
-
     <div class="profile-container mt-4">
+        <form id="profileForm" enctype="multipart/form-data">
 
-        <div class="profile-header-card" id="profile-header-section"> 
-            <div class="profile-pic-wrapper">
-                <img src="https://via.placeholder.com/150" alt="Profile Picture" class="profile-pic-img" id="displayPic">
-                <label for="profilePicUpload" class="upload-badge">
-                    <i class="bi bi-camera-fill"></i>
-                </label>
-                <input type="file" id="profilePicUpload" hidden accept="image/*">
-            </div>
-            <div class="profile-info-main">
-                <h2 id="trainerName">Loading...</h2>
-                <span id="verificationBadge" class="trainer-status-badge d-none">
-                    <i class="bi bi-patch-check-fill"></i> Verified Surf Trainer
-                </span>
-                <p class="location-label">
-                    <i class="bi bi-geo-alt"></i> <span id="trainerLocation">Bagasbas Beach, Daet</span>
-                </p>
-            </div>
-        </div>
+        <?php if ($user_role === 'Trainer'): ?>
+                <div class="profile-header-card" id="profile-header-section"> 
+                    
+                    <div class="profile-img-wrapper position-relative text-center d-inline-block" style="width: 150px; height: 150px; min-width: 150px; min-height: 150px; background-color: #f0f3f8; border-radius: 50%;">
+                        <img id="profileAvatar" src="https://placehold.co/150x150/00167A/FFFFFF?text=Surf+Coach" class="profile-pic-img" style="width: 150px; height: 150px; object-fit: cover; border-radius: 50%;" alt="Profile Picture">
+                        
+                        <label for="inputAvatar" class="btn btn-primary rounded-circle edit-field d-none position-absolute" style="cursor: pointer; z-index: 99; bottom: 0; right: 0; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; padding: 0; box-shadow: 0 4px 6px rgba(0,0,0,0.15);">
+                            <i class="bi bi-camera-fill" style="font-size: 1.1rem; color: #ffffff;"></i>
+                            <input type="file" id="inputAvatar" name="profile_pix" accept="image/*" class="d-none">
+                        </label>
+                    </div>
+
+                    <div class="profile-info-main">
+                        <h2 id="trainerName">Loading Trainer...</h2>
+                        <span id="verificationBadge" class="trainer-status-badge">
+                            <i class="bi bi-patch-check-fill"></i> Verified Surf Trainer
+                        </span>
+                        <p class="location-label">
+                            <i class="bi bi-geo-alt"></i> <span id="trainerLocation">Bagasbas Beach, Daet</span>
+                        </p>
+                    </div>
+                </div>
+        <?php endif; ?>
 
         <div class="profile-grid">
             
             <div class="side-card">
-                <h3 class="section-subtitle-profile" id="sideCardTitle">Account Details</h3>
+                <h3 class="section-subtitle-profile" id="sideCardTitle">
+                    <?php echo ($user_role === 'Trainer') ? 'Trainer Details' : 'Tourist Account'; ?>
+                </h3>
                 
                 <div class="info-row">
                     <span class="info-label">Email Address</span>
@@ -103,20 +115,23 @@
                     <input type="text" id="inputPhone" class="form-control edit-field d-none">
                 </div>
 
-                <div class="info-row" id="experience-section">
+                <div class="info-row <?php echo ($user_role === 'Trainer') ? '' : 'd-none'; ?>" id="experience-section">
                     <span class="info-label">Experience Level</span>
                     <span class="info-value display-field" id="trainerExp">...</span>
                     <input type="text" id="inputExp" class="form-control edit-field d-none">
                 </div>
 
                 <div class="mt-4 d-grid gap-2">
-                    <button id="editToggleBtn" class="btn btn-outline-primary w-100">Edit Profile</button>
-                    <button id="saveBtn" class="btn btn-primary w-100 d-none">Save Changes</button>
+                    <button id="editToggleBtn" class="btn btn-outline-primary w-100" type="button">
+                        <?php echo ($user_role === 'Trainer') ? 'Edit Profile' : 'Update Info'; ?>
+                    </button>
+                    <button id="saveBtn" class="btn btn-primary w-100 d-none" type="button">Save Changes</button>
                 </div>
             </div>
 
             <div class="profile-main-content">
                 
+                <?php if ($user_role === 'Trainer'): ?>
                 <div class="main-profile-card" id="trainer-info-card">
                     <h3 class="section-subtitle-profile">Trainer Information</h3>
     
@@ -138,36 +153,38 @@
                     </div>
 
                     <div class="section-subtitle-profile mt-4">Documents Uploaded</div>
-                    <div class="document-item d-flex align-items-center p-2 border rounded">
-                        <i class="bi bi-file-earmark-check fs-3 me-2 text-primary"></i>
-                        <div>
-                            <div id="docFileName" class="fw-bold text-truncate" style="max-width: 200px;">...</div>
-                            <small id="docStatus" class="text-success">Verified</small>
+                        <div id="trainer-documents-container" class="d-flex flex-column gap-2">
+                            <p class="text-muted small mb-0">Loading registration documents...</p>
                         </div>
                     </div>
-                </div>
+                <?php endif; ?>
 
-                <div class="main-profile-card d-none mt-4" id="tourist-activity-card">
+                <?php if ($user_role === 'Tourist'): ?>
+                <div class="main-profile-card" id="tourist-activity-card">
                     <div class="activity-section">
                         <h3 class="section-subtitle-profile"><i class="bi bi-calendar-check me-2"></i>Recent Bookings</h3>
                         <div id="tourist-bookings-list" class="mt-3">
-                            <p class="text-muted small">Manage your upcoming surf sessions and trainer schedules.</p>
+                            <p class="text-muted small">Loading your booked surf lessons...</p>
                         </div>
                     </div>
 
                     <hr class="my-4">
 
                     <div class="activity-section">
-                        <h3 class="section-subtitle-profile"><i class="bi bi-flag me-2"></i>My Reports</h3>
+                        <h3 class="section-subtitle-profile"><i class="bi bi-flag me-2"></i>My Safety Reports</h3>
                         <div id="my-reports-list" class="mt-3">
-                            <p class="text-muted small">View the history of safety reports you have submitted.</p>
+                            <p class="text-muted small">Loading your history logs...</p>
                         </div>
                     </div>
                 </div>
+                <?php endif; ?>
 
-            </div> </div> </div>
+            </div> 
+        </div> 
+
+        </form> </div> 
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="script.js"></script>
+    <script src="script.js?v=102"></script>
 </body>
 </html>

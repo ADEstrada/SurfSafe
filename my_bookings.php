@@ -1,20 +1,17 @@
+<?php
+session_start();
+?>
 <!DOCTYPE html>
-
 <html lang="en">
-
     <head>
-
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
         <title>SurfSafe - My Bookings</title>
-
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="style.css">
-
     </head>
-
     <body>
 
         <header class="navbar navbar-expand-md sticky-top shadow-sm">
@@ -31,32 +28,36 @@
 
                 <div class="collapse navbar-collapse" id="surfNavbar">
                     <nav class="nav-pages mx-auto">
-                        <a href="index.html">Home</a>
+                        <a href="index.php">Home</a>
                         <a href="marine_data.html">Marine Data</a>
                         <a href="hazard_map.html">Hazard Map</a>
                         <a href="report.html">Report</a>
                         <a href="about.html">About</a>
-                        <a href="trainers.html" id="nav-book-trainer" class="d-none">Trainers</a>
-                        <a href="my_bookings.html" id="nav-my-bookings" class="d-none active">My Bookings</a>
+                        <a href="trainers.php" id="nav-book-trainer" class="d-none">Trainers</a>
+                        <a href="my_bookings.php" id="nav-my-bookings" class="d-none active">My Bookings</a>
                     </nav>
 
-                     <div id="auth-controls" class="auth-buttons">
-                        <a href="login.html" class="btn-login">Login</a>
-                        <a href="signup.html" class="btn-signup">Sign Up</a>
-                    </div>
-
-                    <div id="user-profile-section">
-                        <div class="dropdown">
-                            <a href="#" class="profile-link d-flex align-items-center dropdown-toggle" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-person-circle profile-nav-icon"></i>
-                                <span class="ms-2">Profile</span>
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="profileDropdown">
-                                <li><a class="dropdown-item" href="profile.html"><i class="bi bi-pencil-square me-2"></i>Edit Profile</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><button class="dropdown-item text-danger" id="navLogoutBtn"><i class="bi bi-box-arrow-right me-2"></i>Logout</button></li>
-                            </ul>
-                        </div>
+                    <div class="auth-wrapper">
+                        <?php if (!isset($_SESSION['user_id'])): ?>
+                            <div id="auth-controls" class="auth-buttons">
+                                <a href="login.html" class="btn-login">Login</a>
+                                <a href="signup.html" class="btn-signup">Sign Up</a>
+                            </div>
+                        <?php else: ?>
+                            <div id="user-profile-section">
+                                <div class="dropdown">
+                                    <a href="#" class="profile-link d-flex align-items-center dropdown-toggle" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="bi bi-person-circle profile-nav-icon"></i>
+                                        <span class="ms-2"><?php echo htmlspecialchars($_SESSION['first_name']); ?></span>
+                                    </a>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="profileDropdown">
+                                        <li><a class="dropdown-item" href="profile.php"><i class="bi bi-pencil-square me-2"></i>Edit Profile</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item text-danger" href="logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        <?php endif; ?>
                     </div>
 
                 </div>
@@ -65,25 +66,25 @@
 
         <main>
             <div class="container mt-5">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h2 class="fw-bold text-uppercase">My Bookings</h2>
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="fw-bold text-uppercase">My Bookings</h2>
+                </div>
+
+                <ul class="nav nav-tabs border-0 gap-3 mb-4" id="bookingTabs" role="tablist">
+                    <li class="nav-item"><button class="nav-link active rounded-pill" data-bs-toggle="tab" data-bs-target="#upcoming">Upcoming</button></li>
+                    <li class="nav-item"><button class="nav-link rounded-pill" data-bs-toggle="tab" data-bs-target="#completed">Completed</button></li>
+                    <li class="nav-item"><button class="nav-link rounded-pill text-danger" data-bs-toggle="tab" data-bs-target="#cancelled">Cancelled</button></li>
+                </ul>
+
+                <div class="tab-content mt-2">
+                    <div class="tab-pane fade show active" id="upcoming" role="tabpanel">
+                        <div id="upcoming-list"></div>
                     </div>
-
-                    <ul class="nav nav-tabs border-0 gap-3 mb-4" id="bookingTabs" role="tablist">
-                        <li class="nav-item"><button class="nav-link active rounded-pill" data-bs-toggle="tab" data-bs-target="#upcoming">Upcoming</button></li>
-                        <li class="nav-item"><button class="nav-link rounded-pill" data-bs-toggle="tab" data-bs-target="#completed">Completed</button></li>
-                        <li class="nav-item"><button class="nav-link rounded-pill text-danger" data-bs-toggle="tab" data-bs-target="#cancelled">Cancelled</button></li>
-                    </ul>
-
-                    <div class="tab-content mt-2">
-                        <div class="tab-pane fade show active" id="upcoming" role="tabpanel">
-                            <div id="upcoming-list"></div>
-                        </div>
-                        <div class="tab-pane fade" id="completed" role="tabpanel">
-                            <div id="completed-list"></div>
-                        </div>
-                        <div class="tab-pane fade" id="cancelled" role="tabpanel">
-                            <div id="cancelled-list"></div> </div>
+                    <div class="tab-pane fade" id="completed" role="tabpanel">
+                        <div id="completed-list"></div>
+                    </div>
+                    <div class="tab-pane fade" id="cancelled" role="tabpanel">
+                        <div id="cancelled-list"></div> 
                     </div>
                 </div>
             </div>
@@ -113,17 +114,13 @@
                                 <p id="detail-location" class="mb-0 fw-semibold">---</p>
                             </div>
                         </div>
-
-                        <div id="complete-btn-container">
-                            </div>
+                        <div id="complete-btn-container"></div>
                     </div>
                 </div>
             </div>
         </div>
 
     </body>
-    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="script.js"></script>
-
 </html>
