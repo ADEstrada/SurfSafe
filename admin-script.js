@@ -379,26 +379,58 @@ function updateTrainerDatalist() {
         .join('');
 }
 
-function updateDashboardStatus(waveHeight, currentReports) {
+async function updateDashboardStatus(currentReports = []) {
+    const lat = 14.1369; // Bagasbas Beach
+    const lon = 122.9813;
+    const marineUrl = `https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lon}&hourly=wave_height&timezone=auto`;
 
-    // LEAD ARCHITECT: INTEGRATE WEATHER/MARINE API HERE TO UPDATE DASHBOARD ANALYTICS IN REAL-TIME.
+    let waveHeight = 0.0; 
 
+    try {
+        const response = await fetch(marineUrl);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        
+        const data = await response.json();
+        
+        const currentHour = new Date().getHours();
+        waveHeight = data.hourly?.wave_height?.[currentHour] || data.hourly?.wave_height?.[0] || 0.0;
+        
+        console.log(`Real-time Wave Height fetched: ${waveHeight}m`);
+    } catch (error) {
+        console.error("Lead Architect API Error: Could not update dashboard in real-time.", error);
+    }
+
+    // 2. DOM ELEMENT SELECTORS
     const banner = document.getElementById('status-banner-container');
     const badge = document.getElementById('status-badge');
     const progressBar = document.getElementById('status-progress-bar');
     const waveText = document.getElementById('current-wave-height');
     const hazardText = document.getElementById('hazard-summary');
 
-    if (!banner) return;
+    if (!banner) {
+        console.error("Dashboard Error: #status-banner-container element not found in HTML.");
+        return;
+    }
 
-    waveText.innerText = `${waveHeight}m`;
-
+    // 3. LOGIC DETERMINATION
     let status = "GOOD TO GO";
     let badgeClass = "bg-light text-primary";
     let progressColor = "#28a745"; 
     let summary = "No major hazards reported in the last 4 hours.";
 
-    const hasDangerous = currentReports.some(r => getHazardStatus(r.hazard_type).status === "Dangerous");
+    let hasDangerous = false;
+    try {
+        if (Array.isArray(currentReports) && currentReports.length > 0) {
+            hasDangerous = currentReports.some(r => {
+                if (typeof getHazardStatus === "function") {
+                    return getHazardStatus(r.hazard_type)?.status === "Dangerous";
+                }
+                return r.hazard_type === "Dangerous" || r.status === "Dangerous";
+            });
+        }
+    } catch (err) {
+        console.warn("Hazard check failed, defaulting to safe layout parsing:", err);
+    }
     
     if (hasDangerous || waveHeight > 2.5) {
         status = "DANGEROUS";
@@ -406,20 +438,36 @@ function updateDashboardStatus(waveHeight, currentReports) {
         progressColor = "#dc3545"; 
         summary = "Critical hazards detected! Coordination with lifeguards is advised.";
     } 
-    else if (waveHeight > 1.8 || currentReports.length > 0) {
+    else if (waveHeight > 1.8 || (Array.isArray(currentReports) && currentReports.length > 0)) {
         status = "EXERCISE CAUTION";
         badgeClass = "bg-warning text-dark";
         progressColor = "#ffc107"; 
         summary = "Moderate waves or minor hazards reported. Stay alert.";
     }
 
-    badge.innerText = status;
-    badge.className = `badge rounded-pill px-3 py-2 ${badgeClass}`;
-    hazardText.innerText = summary;
+    // 4. INJECT VALUES INTO DOM (Guarded with conditional checks)
+    if (waveText) {
+        waveText.innerText = `${waveHeight.toFixed(1)}m`;
+    }
+
+    if (badge) {
+        badge.innerText = status;
+        badge.className = `badge rounded-pill px-3 py-2 ${badgeClass}`;
+    }
+
+    if (hazardText) {
+        hazardText.innerText = summary;
+    }
     
-    progressBar.style.backgroundColor = progressColor;
-    progressBar.style.width = "100%";
+    if (progressBar) {
+        progressBar.style.backgroundColor = progressColor;
+        progressBar.style.width = "100%";
+    }
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+    updateDashboardStatus([]);
+});
 
 // FOR THE TOTAL BOOKING MONTHLY GRAPH 
 function initBookingsChart() {
