@@ -1379,7 +1379,6 @@ profile-grid {
     font-family: 'Poppins', sans-serif;
 }
 
-/* Hero Style */
 .about-hero {
     padding: 80px 0 40px;
     text-align: center;
@@ -1401,7 +1400,6 @@ profile-grid {
     letter-spacing: 2px;
 }
 
-/* Story Layout */
 .story-wrapper {
     display: flex;
     flex-wrap: wrap;
@@ -1438,7 +1436,6 @@ profile-grid {
     margin: 0;
 }
 
-/* Pillar Cards */
 .pillar-card {
     padding: 40px 20px;
     text-align: center;
