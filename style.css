@@ -1472,6 +1472,61 @@ profile-grid {
     line-height: 1.6;
 }
 
+.main-footer {
+    background-color: var(--surf-navy);
+    color: var(--surf-white);
+    font-family: var(--font-family);
+    border-top: 4px solid var(--surf-lightblue); 
+}
+
+.footer-brand {
+    font-weight: 700;
+    font-size: 1.8rem;
+    color: var(--surf-white);
+}
+
+.footer-brand span {
+    color: var(--surf-lightblue); 
+}
+
+.footer-tagline {
+    font-size: 0.95rem;
+    color: var(--surf-lightblue);
+    opacity: 0.8;
+}
+
+.footer-contact li, .footer-contact a {
+    color: var(--surf-lightblue);
+    font-size: 0.95rem;
+    transition: 0.3s;
+}
+
+.footer-contact a:hover {
+    color: var(--surf-white);
+}
+
+.social-btn {
+    border: 2px solid var(--surf-lightblue);
+    color: var(--surf-lightblue);
+    background: transparent;
+    border-radius: 4px; 
+    padding: 10px 20px;
+}
+
+.social-btn:hover {
+    background-color: var(--surf-lightblue);
+    color: var(--surf-navy);
+}
+
+.footer-bottom {
+    background-color: rgba(0, 0, 0, 0.15); 
+    padding: 15px 0;
+}
+
+.footer-bottom p {
+    color: var(--surf-lightblue);
+    font-size: 0.85rem;
+}
 
 /* RESPONSIVENESS */
 @media (max-width: 992px) {

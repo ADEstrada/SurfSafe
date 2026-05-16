@@ -168,8 +168,8 @@ function setupWaveChart() {
             },
             scales: {
                 y: {
-                    suggestedMin: -2,
-                    suggestedMax: 2,
+                    beginAtZero: true, 
+                    min: 0,
                     grid: { color: '#f0f0f0' },
                     ticks: { callback: (value) => value + 'm' }
                 },
@@ -273,13 +273,17 @@ function updateTideInfo(tideData) {
 function calculateBestSurfWindow(hourlyData) {
     if (!hourlyData) return;
 
+    // Kunin ang element
+    const displayElement = document.getElementById('best-time-window');
+
+    if (!displayElement) return; 
+
     let bestIndex = 0;
     let bestScore = -Infinity;
 
     for (let i = 0; i < hourlyData.wave_height.length; i++) {
         const wave = hourlyData.wave_height[i];
         const wind = hourlyData.wind_speed_10m[i];
-
         const score = wave - (wind * 0.1);
 
         if (score > bestScore) {
@@ -289,47 +293,40 @@ function calculateBestSurfWindow(hourlyData) {
     }
 
     const bestTime = new Date(hourlyData.time[bestIndex]).getHours() + ":00";
-
-    document.getElementById('best-time-window').innerText = bestTime;
+    displayElement.innerText = bestTime;
 }
 
 // TIDE CHART - marine_data.html (NEEDS API)
-let myTideChart;
-
 function setupTideChart() {
-
     const ctxTide = document.getElementById('tideChart').getContext('2d');
 
     myTideChart = new Chart(ctxTide, {
         type: 'line',
         data: {
             labels: [],
-            datasets: [
-                {
-                    label: 'High Tide',
-                    data: [],
-                    borderColor: '#ff0000',
-                    backgroundColor: 'rgba(255, 0, 0, 0.1)',
-                    tension: 0.4,
-                    fill: false
-                },
-                {
-                    label: 'Low Tide',
-                    data: [],
-                    borderColor: '#0000ff',
-                    backgroundColor: 'rgba(0, 0, 255, 0.1)',
-                    tension: 0.4,
-                    fill: false
-                }
-            ]
+            datasets: [{
+                label: 'Tide Height',
+                data: [],
+                borderColor: '#007bff', 
+                backgroundColor: 'rgba(0, 123, 255, 0.2)', 
+                tension: 0.4, 
+                fill: true, 
+                pointBackgroundColor: '#007bff',
+                pointRadius: 4,
+                spanGaps: true 
+            }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false } 
+            },
             scales: {
                 y: {
                     beginAtZero: false,
-                    grid: { color: '#f0f0f0' }
+                    grid: { color: '#f0f0f0' },
+                    title: { display: true, text: 'Height (m)' }
                 },
                 x: {
                     grid: { display: false }
@@ -344,37 +341,21 @@ function updateTideChart(tideData) {
     if (!myTideChart || !tideData || !tideData.length) return;
 
     const labels = [];
-    const highTide = [];
-    const lowTide = [];
+    const combinedData = [];
 
     tideData.forEach(entry => {
         const date = new Date(entry.time);
-
-        const formattedLabel =
-            date.toLocaleDateString([], {
-                month: 'short',
-                day: 'numeric'
-            }) + " " +
-            date.toLocaleTimeString([], {
-                hour: 'numeric',
-                minute: '2-digit'
-            });
+        const formattedLabel = date.toLocaleDateString([], { month: 'short', day: 'numeric' }) + 
+                               " " + 
+                               date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 
         labels.push(formattedLabel);
-
-        if (entry.type === "high") {
-            highTide.push(entry.height);
-            lowTide.push(null);
-        } else {
-            highTide.push(null);
-            lowTide.push(entry.height);
-        }
+        
+        combinedData.push(entry.height);
     });
 
     myTideChart.data.labels = labels;
-
-    myTideChart.data.datasets[0].data = highTide;
-    myTideChart.data.datasets[1].data = lowTide;
+    myTideChart.data.datasets[0].data = combinedData;
 
     myTideChart.update();
 }
@@ -550,19 +531,19 @@ function updateNavbarBasedOnRole() {
         if (userProfileSection) userProfileSection.classList.remove('d-none');
 
         if (userRole === 'Trainer') {
-            trainersLink?.classList.remove('d-none');   
+            bookTrainerLink?.classList.remove('d-none');  
             myBookingsLink?.classList.remove('d-none');
             touristBookings?.classList.add('d-none');
             touristReports?.classList.add('d-none');
         } else if (userRole === 'Tourist') {
-            trainersLink?.classList.remove('d-none');
+            bookTrainerLink?.classList.remove('d-none');
             myBookingsLink?.classList.add('d-none');    
         }
     } else {
         authControls?.classList.remove('d-none');
         userProfileSection?.classList.add('d-none');
         
-        trainersLink?.classList.add('d-none'); 
+        bookTrainerLink?.classList.add('d-none'); 
         myBookingsLink?.classList.add('d-none');
     }
 }
@@ -1103,12 +1084,13 @@ function renderMyReports() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    generateForecastCards();
-    displayLiveDate();
-
-    if (document.getElementById('waveChart')) setupWaveChart();
-    if (document.getElementById('tideChart')) setupTideChart();
-
+   
+    if (document.getElementById('forecastContainer') || document.getElementById('waveChart')) {
+        generateForecastCards();
+        displayLiveDate();
+        if (document.getElementById('waveChart')) setupWaveChart(); 
+        if (document.getElementById('tideChart')) setupTideChart();
+    }
 
     fetchMarineData();
 
@@ -1154,6 +1136,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     const authModal = new bootstrap.Modal(authModalEl);
                     authModal.show();
                 }
+            } else {
+            window.location.href = "trainers.html";
             }
         });
     });
@@ -1165,7 +1149,9 @@ document.addEventListener('DOMContentLoaded', () => {
         signupForm.addEventListener('submit', (e) => {
             e.preventDefault();
             localStorage.setItem('isLoggedIn', 'true');
-            localStorage.setItem('userRole', selectedRole);
+            if (typeof selectedRole !== 'undefined') {
+                localStorage.setItem('userRole', selectedRole); 
+            }
             window.location.href = "index.html";
         });
     }
