@@ -1,9 +1,14 @@
+<?php
+session_start();
+include 'includes/db.php';
+
+$is_logged_in = isset($_SESSION['user_id']);
+$user_role = $is_logged_in ? $_SESSION['role'] : '';
+?>
+
 <!DOCTYPE html>
-
 <html lang="en">
-
     <head>
-
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
         <title>SurfSafe - Trainers</title>
@@ -11,13 +16,12 @@
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-        <link rel="stylesheet" href="style.css">
-
+        <link rel="stylesheet" href="css/style.css">
     </head>
 
     <body>
-
-        <header class="navbar navbar-expand-md sticky-top shadow-sm">
+        
+    <header class="navbar navbar-expand-md sticky-top shadow-sm">
             <div class="header-container">
                 <img src="assets/logo.svg" alt="SurfSafe Logo" class="logo-icon">
 
@@ -31,32 +35,42 @@
 
                 <div class="collapse navbar-collapse" id="surfNavbar">
                     <nav class="nav-pages mx-auto">
-                        <a href="index.html">Home</a>
-                        <a href="marine_data.html">Marine Data</a>
-                        <a href="hazard_map.html">Hazard Map</a>
-                        <a href="report.html">Report</a>
-                        <a href="about.html">About</a>
-                        <a href="trainers.html" id="nav-book-trainer" class="d-none active">Trainers</a>
-                        <a href="my_bookings.html" id="nav-my-bookings" class="d-none">My Bookings</a>
+                        <a href="index.php">Home</a>
+                        <a href="marine_data.php">Marine Data</a>
+                        <a href="hazard_map.php">Hazard Map</a>
+                        <a href="report.php">Report</a>
+                        <a href="about.php">About</a>
+
+                        <?php if (isset($_SESSION['user_id'])): ?>
+                            <a href="trainers.php" id="nav-book-trainer" class="active">Trainers</a>
+                            
+                            <?php if ($_SESSION['role'] === 'Trainer'): ?>
+                                <a href="my_bookings.php" id="nav-my-bookings">My Bookings</a>
+                            <?php endif; ?>
+                        <?php endif; ?>
                     </nav>
 
-                     <div id="auth-controls" class="auth-buttons">
-                        <a href="login.html" class="btn-login">Login</a>
-                        <a href="signup.html" class="btn-signup">Sign Up</a>
-                    </div>
-
-                    <div id="user-profile-section">
-                        <div class="dropdown">
-                            <a href="#" class="profile-link d-flex align-items-center dropdown-toggle" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-person-circle profile-nav-icon"></i>
-                                <span class="ms-2">Profile</span>
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="profileDropdown">
-                                <li><a class="dropdown-item" href="profile.html"><i class="bi bi-pencil-square me-2"></i>Edit Profile</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><button class="dropdown-item text-danger" id="navLogoutBtn"><i class="bi bi-box-arrow-right me-2"></i>Logout</button></li>
-                            </ul>
-                        </div>
+                    <div class="auth-wrapper">
+                        <?php if (!isset($_SESSION['user_id'])): ?>
+                            <div id="auth-controls" class="auth-buttons">
+                                <a href="login.html" class="btn-login">Login</a>
+                                <a href="signup.html" class="btn-signup">Sign Up</a>
+                            </div>
+                        <?php else: ?>
+                            <div id="user-profile-section">
+                                <div class="dropdown">
+                                    <a href="#" class="profile-link d-flex align-items-center dropdown-toggle" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="bi bi-person-circle profile-nav-icon"></i>
+                                        <span class="ms-2"><?php echo htmlspecialchars($_SESSION['first_name']); ?></span>
+                                    </a>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="profileDropdown">
+                                        <li><a class="dropdown-item" href="profile.php"><i class="bi bi-pencil-square me-2"></i>Edit Profile</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item text-danger" href="backend/logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        <?php endif; ?>
                     </div>
 
                 </div>
@@ -92,14 +106,21 @@
                 </div>
 
                 <div id="trainers-list" class="row g-4">
+
+                <!-- BAT DINAGDAG 'TO
+                    <div class="col-12 text-center py-5">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <p class="text-muted mt-2">Loading active shifts from Bagasbas Beach...</p>
                     </div>
+                 -->
+                    
+                </div>
             </section>
-    </main>
-                
+        </main>
     </body>
 
     <div class="modal fade" id="trainerModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
                 <div class="modal-body p-0 position-relative">
                     <button class="nav-arrow prev-arrow" onclick="prevTrainer()">
@@ -151,8 +172,9 @@
             </div>
         </div>
     </footer>
-    
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="script.js"></script>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- BAT MAY PA 105 DITO -->
+    <script src="script.js?v=105"></script>
 </html>

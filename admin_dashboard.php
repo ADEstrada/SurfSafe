@@ -1,3 +1,11 @@
+<?php
+session_start();
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'Admin') {
+    header("Location: login.html");
+    exit();
+}
+?>
+
 <!DOCTYPE html>
 
 <html lang="en">
@@ -10,7 +18,7 @@
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-        <link rel="stylesheet" href="admin.css">
+        <link rel="stylesheet" href="css/admin.css">
     </head>
 
     <body>
@@ -40,7 +48,7 @@
             </ul>
 
             <div class="p-3 border-top">
-                <a href="index.html" class="btn btn-exit-admin w-100 btn-sm">
+                <a href="index.php" class="btn btn-exit-admin w-100 btn-sm">
                     <i class="bi bi-box-arrow-left"></i> Exit to Site
                 </a>
             </div>
@@ -63,7 +71,6 @@
                         <div class="card stat-card blue-tint shadow-sm border-0 p-4">
                             <small class="text-uppercase fw-bold text-muted">Pending Reports</small>
                             <h1 id="stat-pending-reports" class="display-5 fw-bold mt-2">--</h1> 
-                            <p class="text-muted mb-0">New reports to review</p> 
                         </div>
                     </div>
 
@@ -72,7 +79,6 @@
                         <div class="card stat-card blue-tint shadow-sm border-0 p-4">
                             <small class="text-uppercase fw-bold text-muted">Total Trainers</small>
                             <h1 id="stat-total-trainers" class="display-5 fw-bold mt-2">--</h1> 
-                            <p class="text-muted mb-0">Waiting for data...</p>
                         </div>
                     </div>
 
@@ -81,7 +87,6 @@
                         <div class="card stat-card blue-tint shadow-sm border-0 p-4">
                             <small class="text-uppercase fw-bold text-muted">Active Bookings</small>
                             <h1 id="stat-active-bookings" class="display-5 fw-bold mt-2">--</h1> 
-                            <p class="text-muted mb-0">Waiting for data...</p>
                         </div>
                     </div>
                 </div>
@@ -119,10 +124,10 @@
                                     <h5 class="fw-bold mb-0">Booking Analytics</h5>
                                     <small class="text-muted">Total bookings per month</small>
                                 </div>
-                                <!-- DROPDOWN TO FILTER YEARS -->
-                                <select class="form-select form-select-sm" style="width: auto;">
-                                    <option selected>2024</option>
-                                    <option>2023</option>
+                                <select id="chartYearFilter" class="form-select form-select-sm" style="width: auto;">
+                                    <option selected>2026</option>
+                                    <option>2027</option>
+                                    <option>2028</option>
                                 </select>
                             </div>
                             
@@ -154,7 +159,6 @@
                         <div class="card stat-card blue-tint shadow-sm border-0 p-4">
                             <small class="text-uppercase fw-bold text-muted">Total Trainers</small>
                             <h1 id="stat-total-trainers-list" class="display-5 fw-bold mt-2">--</h1>
-                            <p class="text-muted mb-0">Waiting for data...</p>
                         </div>
                     </div>
 
@@ -163,7 +167,6 @@
                         <div class="card stat-card blue-tint shadow-sm border-0 p-4">
                             <small class="text-uppercase fw-bold text-muted">Pending Approvals</small>
                             <h1 id="stat-pending-approvals" class="display-5 fw-bold mt-2">--</h1>
-                            <p class="text-muted mb-0">New applicants to review</p>
                         </div>
                     </div>
 
@@ -172,7 +175,6 @@
                         <div class="card stat-card blue-tint shadow-sm border-0 p-4">
                             <small class="text-uppercase fw-bold text-muted">Weekly Bookings</small>
                             <h1 id="stat-weekly-bookings" class="display-5 fw-bold mt-2">--</h1>
-                            <p class="text-muted mb-0">No records yet</p>
                         </div>
                     </div>
                 </div>
@@ -214,7 +216,6 @@
                         <div class="card stat-card blue-tint shadow-sm border-0 p-4">
                             <small class="text-uppercase fw-bold text-muted">Pending Reports</small>
                             <h1 id="stat-pending-reports-list" class="display-5 fw-bold mt-2">--</h1>
-                            <p class="text-muted mb-0">New reports to review</p>
                         </div>
                     </div>
 
@@ -223,7 +224,6 @@
                         <div class="card stat-card blue-tint shadow-sm border-0 p-4">
                             <small class="text-uppercase fw-bold text-muted">Active Hazards</small>
                             <h1 id="stat-active-hazards" class="display-5 fw-bold mt-2">--</h1>
-                            <p class="text-muted mb-0">Waiting for data...</p>
                         </div>
                     </div>
 
@@ -232,7 +232,6 @@
                         <div class="card stat-card blue-tint shadow-sm border-0 p-4">
                             <small class="text-uppercase fw-bold text-muted">Active Bookings</small>
                             <h1 id="stat-active-bookings-list" class="display-5 fw-bold mt-2">--</h1>
-                            <p class="text-muted mb-0">Waiting for data...</p>
                         </div>
                     </div>
                 </div>
@@ -244,9 +243,7 @@
                     </div>
                    <div class="col-md-5 mb-4">
                         <div id="admin-reports-queue" class="pe-2 queue-scroll-container">
-                            <div class="text-center py-5 text-muted">
-                                <p>Loading pending reports...</p>
-                            </div>
+                            
                         </div>
                     </div>
                     <div class="col-md-7">
@@ -302,7 +299,7 @@
         </main>
 
         <!-- POP UP FOR ASSIGNING SCHEDULE -->
-        <div class="modal fade" id="assignShiftModal" tabindex="-1" aria-hidden="true">
+       <div class="modal fade" id="assignShiftModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content border-0 shadow">
                     <div class="modal-header border-0">
@@ -311,23 +308,26 @@
                     </div>
                     <div class="modal-body">
                         <form id="assignShiftForm">
-                            <div class="mb-4">
-                                <div class="search-container w-100">
-                                    <i class="bi bi-search"></i>
-                                    <input type="text" list="trainerList" class="form-control search-input w-100" placeholder="Type trainer name..." required>
-                                    <datalist id="trainerList"></datalist>
-                                </div>
+                            
+                            <div class="mb-4 position-relative">
+                                <label for="trainerSearchInput" class="form-label small fw-bold">Assign Trainer</label>
+                                <input type="text" id="trainerSearchInput" class="form-control modal-input" placeholder="Type trainer name..." autocomplete="off" required>
+                                
+                                <input type="hidden" id="selectedTrainerId" name="user_id">
+                                
+                                <div id="trainerSuggestionsList" class="list-group position-absolute w-100 shadow-lg d-none" style="z-index: 1050; max-height: 200px; overflow-y: auto; top: 100%;"></div>
                             </div>
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label small fw-bold">Start Time</label>
-                                    <input type="time" class="form-control modal-input" required>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label small fw-bold">Start Time</label>
+                                        <input type="time" id="shiftStartTime" class="form-control modal-input" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label small fw-bold">End Time</label>
+                                        <input type="time" id="shiftEndTime" class="form-control modal-input" required>
+                                    </div>
                                 </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label small fw-bold">End Time</label>
-                                    <input type="time" class="form-control modal-input" required>
-                                </div>
-                            </div>
                             <div class="alert alert-info border-0 mt-3 modal-alert">
                                 <small class="d-block">
                                     <i class="bi bi-info-circle-fill"></i> This schedule will immediately be visible for booking.
