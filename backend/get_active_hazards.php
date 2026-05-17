@@ -1,5 +1,8 @@
+
 <?php
-// get_active_hazards.php
+
+// MAIN PURPOSE IS TO FETCH ALL THE APPROVED/ACTIVE HAZARDS 
+
 header('Content-Type: application/json');
 session_start();
 
@@ -13,7 +16,6 @@ $response = [
     'hazards' => []
 ];
 
-// FIXED: Pinalitan ng MySQLi driver query loop pattern para tugma sa includes/db.php ninyo
 $query = "SELECT id, hazard_type, description, latitude, longitude, reporter, verification_status AS status, 
                  DATE_FORMAT(reported_at, '%b %d, %Y | %h:%i %p') AS reported_at
           FROM hazard_reports

@@ -636,7 +636,6 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', () => {
     renderCalendar();
     renderReportsQueue();
-    updateTrainerDatalist();
     initBookingsChart();
 
     setTimeout(fetchAndRenderCalendarShifts, 200);

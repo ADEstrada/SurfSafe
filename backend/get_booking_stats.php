@@ -1,7 +1,9 @@
-<!-- FOR THE BOOKING ANALYTICS GRAPH  -->
+
 <?php
 session_start();
 include '../includes/db.php';
+
+// FOR THE BOOKING ANALYTICS GRAPH  
 
 error_reporting(E_ALL);
 ini_set('display_errors', 0);

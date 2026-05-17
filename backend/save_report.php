@@ -1,7 +1,9 @@
-<!-- FOR SUBMITTING REPORT -->
+
 <?php
 session_start();
 include '../includes/db.php';
+
+// FOR SUBMITTING REPORT -->
 
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
