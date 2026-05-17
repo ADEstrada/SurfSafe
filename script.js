@@ -1543,13 +1543,10 @@ function loadUserProfileData() {
             if (!data.success) {
                 if (currentFile === "profile.php") {
                     window.location.href = 'login.html';
-                } else {
-                    updateNavbarBasedOnRole(false, '');
                 }
                 return;
             }
 
-            updateNavbarBasedOnRole(true, data.role);
 
             // SAFE LOGOUT BINDING STABILIZATION - LYZETTE
             const logoutBtn = document.getElementById('logoutBtn');

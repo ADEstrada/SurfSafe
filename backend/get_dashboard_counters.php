@@ -1,8 +1,10 @@
 
-<!-- FOR THE SUMMARIZED DATA IN THE ADMIN DASHBOARD -->
+
 <?php
 session_start();
 include '../includes/db.php';
+
+// FOR THE SUMMARIZED DATA IN THE ADMIN DASHBOARD 
 
 error_reporting(E_ALL);
 ini_set('display_errors', 0);

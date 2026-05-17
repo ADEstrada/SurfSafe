@@ -1,7 +1,9 @@
-<!-- FOR THE PROCCESS OF REPORTED HAZARD -->
+
 <?php
 session_start();
 include '../includes/db.php';
+
+// FOR THE PROCCESS OF REPORTED HAZARD -->
 
 error_reporting(E_ALL);
 ini_set('display_errors', 0);

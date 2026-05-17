@@ -1,10 +1,12 @@
-<!-- MAIN PURPOSE IS TO FETCH ALL PENDING HAZARDS TO BE APPROVE -->
+
 <?php
 session_start();
 include '../includes/db.php';
 
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
+
+//  MAIN PURPOSE IS TO FETCH ALL PENDING HAZARDS TO BE APPROVE 
 
 $response = [
     'success' => false,
