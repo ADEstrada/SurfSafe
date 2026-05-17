@@ -113,14 +113,14 @@ body {
 
 .profile-link {
     text-decoration: none;
-    color: nav(--surf-navy);
+    color: var(--surf-navy);
     font-weight: 600;
     display: flex;
     align-items: center;
 }
 
 .profile-nav-icon {
-    font-size: 1.5rem; 
+    font-size: 1.5rem;
     line-height: 1;
 }
 
@@ -135,7 +135,7 @@ body {
 .login-card, .signup-card {
     background: var(--surf-white);
     width: 100%;
-    max-width: 450px; 
+    max-width: 450px;
     padding: 3rem 2.5rem;
     border-radius: 20px;
     text-align: center;
@@ -148,7 +148,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto 2.5rem auto; 
+    margin: 0 auto 2.5rem auto;
 }
 
 .logo-wrapper img {
@@ -156,7 +156,7 @@ body {
     width: auto;
     object-fit: contain;
 }
-        
+
 .introTagline {
     font-family: var(--font-family);
     font-size: 25px;
@@ -203,7 +203,7 @@ body {
 
 .signup-card {
     transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    max-width: 450px; 
+    max-width: 450px;
     overflow: hidden;
 }
 
@@ -219,14 +219,14 @@ body {
 }
 
 .form-column {
-    flex: 0 0 100%; 
+    flex: 0 0 100%;
     padding: 0 5px;
     transition: all 0.5s ease;
 }
 
 
 .trainer-docs {
-    display: none; 
+    display: none;
     opacity: 0;
     border-left: 1px solid var(--surf-border);
     padding-left: 30px !important;
@@ -234,7 +234,7 @@ body {
 }
 
 .signup-card.trainer-expanded .form-column {
-    flex: 0 0 50%; 
+    flex: 0 0 50%;
 }
 
 .signup-card.trainer-expanded .trainer-docs {
@@ -261,7 +261,7 @@ body {
 }
 
 .terms-container {
-    display: none; 
+    display: none;
     opacity: 0;
     transition: opacity 0.5s ease;
     text-align: left;
@@ -305,7 +305,7 @@ body {
 }
 
 .custom-modal .tab-pane {
-    max-height: 400px; 
+    max-height: 400px;
     overflow-y: auto;
     padding-top: 15px;
 }
@@ -409,7 +409,7 @@ body {
 }
 
 .home-section, .marine-section {
-    display: block; 
+    display: block;
     width: 100%;
 }
 
@@ -418,13 +418,13 @@ body {
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    min-height: calc(100vh - 70px); 
+    min-height: calc(100vh - 70px);
     width: 100%;
     display: flex;
     flex-direction: column;
-    align-items: flex-start; 
+    align-items: flex-start;
     justify-content: center;
-    padding: 0 10%; 
+    padding: 0 10%;
     color: var(--surf-white);
     opacity: 0.8;
 }
@@ -442,7 +442,7 @@ body {
 }
 
 .main-title {
-    font-size: 80px; 
+    font-size: 80px;
     font-weight: 700;
     line-height: 1.1;
     margin-bottom: 20px;
@@ -586,7 +586,7 @@ body {
 }
 
 .hazard-map-preview {
-    background-color: var(--surf-navy); 
+    background-color: var(--surf-navy);
     padding: 80px 0;
     color: var(--surf-white);
 }
@@ -617,7 +617,7 @@ body {
 }
 
 .map-placeholder {
-    height: 500px; 
+    height: 500px;
     width: 100%;
     background-color: var(--surf-gray); /* PLACE HOLDER ONLY) */
     background-size: cover;
@@ -674,7 +674,7 @@ body {
     border-radius: 20px;
     overflow: hidden;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-    max-width: 350px; 
+    max-width: 350px;
     margin: 0 auto;
 }
 
@@ -687,7 +687,7 @@ body {
 
 .hourly-forecast {
     padding: 60px 0;
-    background-color: var(--surf-white); 
+    background-color: var(--surf-white);
 }
 
 .chart-card {
@@ -712,7 +712,7 @@ body {
 
 .best-window-box {
     margin-top: 5px;
-    border: 2px solid var(--surf-navy); 
+    border: 2px solid var(--surf-navy);
     text-align: left;
 }
 
@@ -748,7 +748,7 @@ body {
 }
 
 .low-tide {
-    color: #0000ff; 
+    color: #0000ff;
     font-weight: 700;
 }
 
@@ -768,7 +768,7 @@ body {
 
 .condition-summary {
     padding: 30px 0;
-    background: linear-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.8)), url('assets/bagasbas.svg'); 
+    background: linear-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.8)), url('assets/bagasbas.svg');
     background-size: cover;
 }
 
@@ -776,7 +776,7 @@ body {
     background: var(--surf-white);
     padding: 25px;
     border-radius: 15px;
-    border-left: 5px solid var(--surf-navy); 
+    border-left: 5px solid var(--surf-navy);
     box-shadow: 0 4px 15px rgba(0,0,0,0.05);
 }
 
@@ -824,7 +824,7 @@ body {
 }
 
 .detail-item i {
-    color: var(--surf-navy); 
+    color: var(--surf-navy);
 }
 
 .intro-content, .reports-preview, .condition-summary, .trainer-img-wrapper {
@@ -835,7 +835,7 @@ body {
     position: absolute;
     bottom: 15px;
     right: 15px;
-    background: rgba(0, 48, 135, 0.4); 
+    background: rgba(0, 48, 135, 0.4);
     color: white;
     width: 30px;
     height: 30px;
@@ -869,7 +869,7 @@ body {
 
 .report-entry {
     background: var(--surf-white);
-    border-radius: 15px; 
+    border-radius: 15px;
     display: flex;
     overflow: hidden;
     border: 1px solid var(--surf-border);
@@ -898,8 +898,8 @@ body {
     color: var(--surf-grayish);
     line-height: 1.5;
     margin-bottom: 10px;
-    display: block; 
-    overflow: visible; 
+    display: block;
+    overflow: visible;
     padding: 5px 0;
 }
 
@@ -959,14 +959,14 @@ body {
 }
 
 .report-list-container {
-    min-height: 500px; 
+    min-height: 500px;
     display: flex;
     flex-direction: column;
 }
 
 .reports-feed {
     width: 100%;
-    max-height: 480px; 
+    max-height: 480px;
     overflow-y: auto;
     padding-right: 10px;
 }
@@ -1226,8 +1226,8 @@ profile-grid {
     border-radius: 15px;
     overflow: hidden;
     background: #fff;
-    max-width: 320px; 
-    margin: 0 auto; 
+    max-width: 320px;
+    margin: 0 auto;
     height: 100%;
 }
 
@@ -1278,7 +1278,7 @@ profile-grid {
 }
 
 .day-dot.past {
-    color: #ccc; 
+    color: #ccc;
     font-weight: normal;
 }
 
@@ -1303,7 +1303,7 @@ profile-grid {
 .next-arrow { right: -20px; }
 
 .expertise-chip {
-    background-color: var(--surf-lightblue); 
+    background-color: var(--surf-lightblue);
     color: var(--surf-navy);
     padding: 5px 12px;
     border-radius: 10px;
@@ -1320,7 +1320,7 @@ profile-grid {
 }
 
 .modal-body.position-relative {
-    min-height: 200px; 
+    min-height: 200px;
 }
 
 .nav-arrow.d-none {
@@ -1328,13 +1328,13 @@ profile-grid {
 }
 
 #editToggleBtn {
-    transition: all 0.3s ease; 
-    border-color:  var(--surf-navy); 
+    transition: all 0.3s ease;
+    border-color:  var(--surf-navy);
     color:  var(--surf-navy);
 }
 
 #editToggleBtn:hover, #saveBtn:hover {
-    background-color: var(--surf-navy) !important; 
+    background-color: var(--surf-navy) !important;
     color: white !important;
     border-color:  var(--surf-navy) !important;
 }
@@ -1350,11 +1350,11 @@ profile-grid {
 .booking-action-container {
     min-width: 120px;
     display: flex;
-    justify-content: flex-end; 
+    justify-content: flex-end;
 }
 
 .btn-cancel-responsive {
-    width: auto; 
+    width: auto;
     padding: 8px 20px;
 }
 
@@ -1478,7 +1478,7 @@ profile-grid {
     .main-title {
         font-size: 56px;
     }
-    
+
     .nav-pages {
         gap: 20px;
     }
@@ -1500,13 +1500,13 @@ profile-grid {
 }
 
 @media (max-width: 768px) {
-    
+
     .header-container {
-        flex-direction: row !important; 
+        flex-direction: row !important;
         justify-content: space-between;
         align-items: center;
         padding: 0 20px !important;
-        height: 70px; 
+        height: 70px;
         position: relative;
     }
 
@@ -1539,12 +1539,12 @@ profile-grid {
     .custom-hamburger:not(.collapsed) .line3 { transform: translateY(-9px) rotate(-45deg); }
 
     .navbar-collapse {
-        background-color: var(--surf-white); 
-        position: absolute; 
-        top: 70px; 
+        background-color: var(--surf-white);
+        position: absolute;
+        top: 70px;
         left: 0;
         width: 100%;
-        z-index: 9999; 
+        z-index: 9999;
         padding: 20px;
         box-shadow: 0 10px 15px rgba(0,0,0,0.1);
     }
@@ -1565,7 +1565,7 @@ profile-grid {
 
     .forecast-wrapper {
         display: grid;
-        grid-template-columns: repeat(2, 1fr); 
+        grid-template-columns: repeat(2, 1fr);
         gap: 15px;
         justify-items: center;
         padding: 0 10px;
@@ -1574,7 +1574,7 @@ profile-grid {
     .forecast-card {
         width: 100%;
         max-width: 160px;
-        height: auto; 
+        height: auto;
         padding: 20px 10px;
     }
 
@@ -1602,12 +1602,12 @@ profile-grid {
     }
 
     .welcome-badge, .report-badge {
-        font-size: 14px; 
+        font-size: 14px;
         padding: 6px 15px;
-        letter-spacing: 1px; 
-        display: inline-block; 
-        max-width: 90%; 
-        line-height: 1.4; 
+        letter-spacing: 1px;
+        display: inline-block;
+        max-width: 90%;
+        line-height: 1.4;
     }
 
     .signup-card.trainer-expanded {
@@ -1643,16 +1643,16 @@ profile-grid {
     .next-arrow { right: 5px; }
 
     .booking-action-container {
-        width: 100% !important; 
+        width: 100% !important;
         display: flex !important;
-        justify-content: center !important; 
+        justify-content: center !important;
         border-top: 1px solid var(--surf-border);
         padding-top: 15px;
         margin-top: 10px;
     }
 
     .btn-cancel-responsive {
-        width: 100% !important; 
+        width: 100% !important;
         max-width: 100%;
     }
 
@@ -1667,7 +1667,7 @@ profile-grid {
     }
 
     .forecast-wrapper {
-        grid-template-columns: 1fr; 
+        grid-template-columns: 1fr;
     }
 
     .welcome-badge {
@@ -1676,12 +1676,58 @@ profile-grid {
     }
 
     .report-badge {
-        font-size: 12px; 
-        letter-spacing: 0.5px; 
+        font-size: 12px;
+        letter-spacing: 0.5px;
         padding: 4px 12px;
         margin-bottom: 15px;
-        white-space: normal; 
-        height: auto; 
+        white-space: normal;
+        height: auto;
     }
 }
 
+/* HAZARD MAP PAGE LAYOUT */
+.hazard-map-page {
+    background: #f5f7fb;
+    min-height: 100vh;
+    padding-bottom: 40px;
+}
+
+/* MAP OUTER CONTAINER */
+.hazard-map-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: auto;
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid #dfe6ee;
+}
+
+/* ACTUAL MAP */
+#map {
+    width: 100%;
+    height: 650px;
+}
+
+@media (max-width: 768px) {
+
+    #map {
+        height: 500px;
+    }
+
+    .hazard-map-container {
+        border-radius: 14px;
+    }
+}
+
+.leaflet-container {
+    height: 100%;
+    width: 100%;
+}
+
+#hazard-map-api {
+    height: 400px;
+    width: 100%;
+    border-radius: 15px;
+    overflow: hidden;
+}
