@@ -573,9 +573,18 @@ function renderReports() {
             const reportsData = data.hazards;
             
             container.innerHTML = reportsData.map(report => {
-                const isDangerous = report.status.toLowerCase() === 'dangerous';
-                const accentColor = isDangerous ? '#ff311f' : '#ffc107';
-                const badgeClass = isDangerous ? 'bg-danger' : 'bg-warning text-dark';
+                const currentStatus = report.status ? report.status.toLowerCase() : 'safe';
+                
+                let accentColor = '#198754';
+                let badgeClass = 'bg-success text-white';
+                
+                if (currentStatus === 'dangerous') {
+                    accentColor = '#ff311f'; 
+                    badgeClass = 'bg-danger text-white';
+                } else if (currentStatus === 'warning') {
+                    accentColor = '#ffc107'; 
+                    badgeClass = 'bg-warning text-dark';
+                }
 
                 return `
                     <div class="report-entry shadow-sm">
@@ -585,7 +594,7 @@ function renderReports() {
                                 
                                 <div class="col-md-8 pe-3">
                                     <span class="badge rounded-pill status-badge ${badgeClass} d-inline-block">
-                                        ${report.status.toUpperCase()}
+                                        ${currentStatus.toUpperCase()}
                                     </span>
                                     <p class="entry-description">${report.description}</p>
                                     <div class="location-text">
@@ -723,15 +732,15 @@ function showDetails(id) {
         .then(res => res.json())
         .then(data => {
             if(!data.success) return;
-            const booking = data.bookings.find(b => b.id === id);
+            const booking = data.bookings.find(b => b.id === id); // string/number match validation layer
             
-    if (booking) {
+            if (booking) {
                 const bookingsModalWrapper = document.querySelector('#detailsModal .modal-dialog');
                 if (bookingsModalWrapper) {
                     bookingsModalWrapper.classList.add('modal-lg');
                 }
 
-        document.getElementById('detail-name').innerText = booking.tourist_name;
+                document.getElementById('detail-name').innerText = booking.tourist_name;
                 document.getElementById('detail-email').innerText = booking.email || "No Email Provided";
                 
                 const liveDate = booking.date_display || "No Date Assigned";
@@ -743,20 +752,25 @@ function showDetails(id) {
                 }
                 document.getElementById('detail-location').innerText = booking.location || "Not Specified";
 
-        const btnContainer = document.getElementById('complete-btn-container');
-                if (booking.status.toLowerCase() === 'upcoming') {
-            btnContainer.innerHTML = `
-                <button class="btn btn-success w-100 rounded-pill" onclick="completeBooking('${booking.id}')">
-                    <i class="bi bi-check-circle me-2"></i>Mark as Completed
-                </button>
-            `;
-        } else {
-            btnContainer.innerHTML = '';
-        }
+                const notesElement = document.getElementById('detail-notes');
+                if (notesElement) {
+                    notesElement.innerText = booking.notes || "No structural requests specified.";
+                }
 
-        const detailsModal = new bootstrap.Modal(document.getElementById('detailsModal'));
-        detailsModal.show();
-    }
+                const btnContainer = document.getElementById('complete-btn-container');
+                if (booking.status.toLowerCase() === 'upcoming') {
+                    btnContainer.innerHTML = `
+                        <button class="btn btn-success w-100 rounded-pill" onclick="completeBooking('${booking.id}')">
+                            <i class="bi bi-check-circle me-2"></i>Mark as Completed
+                        </button>
+                    `;
+                } else {
+                    btnContainer.innerHTML = '';
+                }
+
+                const detailsModal = new bootstrap.Modal(document.getElementById('detailsModal'));
+                detailsModal.show();
+            }
         })
         .catch(error => console.error("Error loading modal data framework:", error));
 }
@@ -765,12 +779,47 @@ document.addEventListener("DOMContentLoaded", () => {
     renderBookings();
 });
 
+// FOR COMPLETE BOOKING
 function completeBooking(id) {
-    alert("Lesson marked as completed!");
-        const modalElement = document.getElementById('detailsModal');
-        const modalInstance = bootstrap.Modal.getInstance(modalElement);
-    if(modalInstance) modalInstance.hide();
-        renderBookings();
+    if (!confirm("Are you sure you want to mark this surf lesson as completed?")) {
+        return;
+    }
+
+    const payload = new FormData();
+    payload.append('booking_id', id);
+
+    fetch('backend/complete_booking.php', {
+        method: 'POST',
+        body: payload
+    })
+    .then(res => {
+        if (!res.ok) throw new Error("HTTP Status validation breakdown: " + res.status);
+        return res.json();
+    })
+    .then(result => {
+        if (result.success) {
+            alert(result.message);
+            
+            const modalElement = document.getElementById('detailsModal');
+            if (modalElement) {
+                const modalInstance = bootstrap.Modal.getInstance(modalElement);
+                if (modalInstance) modalInstance.hide();
+            }
+            
+            if (typeof renderBookings === 'function') {
+                renderBookings(); 
+            }
+            if (typeof renderLiveTouristBookings === 'function') {
+                renderLiveTouristBookings(); 
+            }
+        } else {
+            alert("Process Failure: " + result.message);
+        }
+    })
+    .catch(error => {
+        console.error("Error executing system booking lifecycle completion update:", error);
+        alert("Network processing error. Verify connection layout framework.");
+    });
 }
 
 // TRAINERS LIST - trainer.php
@@ -1420,73 +1469,104 @@ function renderMyReports() {
     const container = document.getElementById('my-reports-list');
     if (!container) return;
 
-    if (!myReportsData || myReportsData.length === 0) {
-        container.innerHTML = `
-            <div class="text-center py-5 border rounded bg-light">
-                <i class="bi bi-clipboard-x text-muted" style="font-size: 2.5rem;"></i>
-                <p class="text-muted mt-2">No reports submitted yet.</p>
-            </div>`;
-        return;
-    }
+    fetch('backend/get_my_reports.php')
+        .then(res => res.json())
+        .then(data => {
+            if (!data.success || !data.reports || data.reports.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-5 border rounded bg-light">
+                        <i class="bi bi-clipboard-x text-muted" style="font-size: 2.5rem;"></i>
+                        <p class="text-muted mt-2">No reports submitted yet.</p>
+                    </div>`;
+                return;
+            }
 
-    container.innerHTML = myReportsData.map(report => {
-        const isApproved = report.verification_status === 'Approved';
-        const badgeClass = isApproved ? 'bg-success' : 'bg-warning text-dark';
+            const myReportsData = data.reports;
 
-        return `
-            <div class="report-item p-3 mb-3 border rounded shadow-sm bg-white">
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                    <div>
-                        <span class="badge ${badgeClass} rounded-pill px-3 py-1 mb-2" style="font-size: 0.7rem;">
-                            ${report.verification_status.toUpperCase()}
-                        </span>
-                        <h6 class="fw-bold mb-1">${report.hazard_type}</h6>
+            container.innerHTML = myReportsData.map(report => {
+                const verifyStatus = report.verification_status ? report.verification_status.toLowerCase() : 'pending';
+                const hazardStatus = report.status ? report.status.toLowerCase() : 'safe';
+                
+                // 1. Logic para sa Verification Status Badge
+                let verifyBadgeClass = 'bg-warning text-dark'; // Pending
+                if (verifyStatus === 'approved') verifyBadgeClass = 'bg-success text-white';
+                if (verifyStatus === 'rejected') verifyBadgeClass = 'bg-danger text-white';
+                if (verifyStatus === 'resolved') verifyBadgeClass = 'bg-secondary text-white';
+
+                // 2. Logic para sa Hazard Severity Status Badge (Dangerous/Warning/Safe)
+                let hazardBadgeHTML = '';
+                if (verifyStatus === 'approved' || verifyStatus === 'resolved') {
+                    let hazardClass = 'bg-success text-white'; // Safe
+                    if (hazardStatus === 'dangerous') hazardClass = 'bg-danger text-white';
+                    if (hazardStatus === 'warning') hazardClass = 'bg-warning text-dark';
+                    
+                    // Gagawa tayo ng pangalawang badge sa tabi ng una
+                    hazardBadgeHTML = `
+                        <span class="badge ${hazardClass} rounded-pill px-3 py-1 mb-2 ms-1" style="font-size: 0.7rem; letter-spacing: 0.5px;">
+                            ${hazardStatus.toUpperCase()}
+                        </span>`;
+                }
+
+                return `
+                    <div class="report-item p-3 mb-3 border rounded shadow-sm bg-white" id="my-report-card-${report.id}">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <span class="badge ${verifyBadgeClass} rounded-pill px-3 py-1 mb-2" style="font-size: 0.7rem; letter-spacing: 0.5px;">
+                                    ${verifyStatus.toUpperCase()}
+                                </span>
+                                ${hazardBadgeHTML}
+                                
+                                <h6 class="fw-bold mb-1 mt-1">${report.hazard_type}</h6>
+                            </div>
+                            <small class="text-muted" style="font-size: 0.75rem;">${report.reported_at}</small>
+                        </div>
+
+                        <p class="text-muted mb-3 small">${report.description}</p>
+
+                        <div class="d-flex align-items-center justify-content-between border-top pt-2 mt-2">
+                            <div class="small text-muted">
+                                <i class="bi bi-geo-alt-fill text-danger me-1"></i>
+                                ${report.latitude}, ${report.longitude}
+                            </div>
+                            <button class="btn btn-sm text-danger p-0" onclick="deleteReport('${report.id}')">
+                                <i class="bi bi-trash3"></i>
+                            </button>
+                        </div>
                     </div>
-                    <small class="text-muted" style="font-size: 0.75rem;">${report.reported_at}</small>
-                </div>
-
-                <p class="text-muted mb-3 small">${report.description}</p>
-
-                <div class="d-flex align-items-center justify-content-between border-top pt-2 mt-2">
-                    <div class="small text-muted">
-                        <i class="bi bi-geo-alt-fill text-danger me-1"></i>
-                        ${report.latitude}, ${report.longitude}
-                    </div>
-                    <button class="btn btn-sm text-danger p-0" onclick="deleteReport('${report.id}')">
-                        <i class="bi bi-trash3"></i>
-                    </button>
-                </div>
-            </div>
-        `;
-    }).join('');
+                `;
+            }).join('');
+        })
+        .catch(error => {
+            console.error("Error structural fetching personal database hazard logging layers:", error);
+            container.innerHTML = `<div class="text-danger text-center small py-3">Error fetching personal safety logs matrix.</div>`;
+        });
 }
 
 // UPDATED THIS PART TO RENDER REAL REPORTS FROM THE DATABASE - LYZETTE
 document.addEventListener('DOMContentLoaded', () => {
     loadUserProfileData();
 
-    if (document.getElementById('forecastContainer') || document.getElementById('waveChart')) {
+    // INAYOS DITO: Binalot natin ang Marine Data sa Page Guard check para tumakbo lang kung nasaan ang mga Charts/Forecasts
+    if (document.getElementById('forecastContainer') || document.getElementById('waveChart') || document.getElementById('tideChart')) {
         generateForecastCards();
         displayLiveDate();
         if (document.getElementById('waveChart')) setupWaveChart();
         if (document.getElementById('tideChart')) setupTideChart();
+        fetchMarineData(); // Ligtas na itong patakbuhin dito boi
     }
 
-     fetchMarineData();
-
-     if (typeof L !== 'undefined') {
-        initHomepageMapPreview();
-        initLiveHazardMap();
+    if (typeof L !== 'undefined') {
+        if (document.getElementById('hazard-map-api')) initHomepageMapPreview();
+        if (document.getElementById('map')) initLiveHazardMap();
     } else {
         console.warn("Leaflet Map framework integration is still loading... Retrying in a short window.");
         setTimeout(() => {
             if (typeof L !== 'undefined') {
-                initHomepageMapPreview();
-                initLiveHazardMap();
+                if (document.getElementById('hazard-map-api')) initHomepageMapPreview();
+                if (document.getElementById('map')) initLiveHazardMap();
             }
         }, 500);
     }
-
 
     const termsModal = document.getElementById('termsModal');
     if (termsModal) {
@@ -1508,7 +1588,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // TARGETS ALL COHORT TRAINER REDIRECTION BUTTONS ON THE HOMEPAGE - LYZETTE
     const gatekeeperButtons = document.querySelectorAll('.btn-gatekeeper');
-
     gatekeeperButtons.forEach(button => {
         button.addEventListener('click', function(e) {
             e.preventDefault();
@@ -1535,17 +1614,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (document.getElementById('reports-list')) renderReports();
     if (document.getElementById('upcoming-list')) renderBookings();
+    if (document.getElementById('my-reports-list')) renderMyReports();
+    if (document.getElementById('tourist-bookings-list')) renderLiveTouristBookings();
 
     const modalEl = document.getElementById('trainerModal');
     if (modalEl) {
         trainerModal = new bootstrap.Modal(modalEl);
     }
 
-    renderTrainers();
+    if (document.getElementById('trainers-list')) renderTrainers();
 
     if (document.getElementById('sideCardTitle')) {
         setupProfileEditorActions();
     }
+    
     const avatarInput = document.getElementById('inputAvatar');
     if (avatarInput) {
         avatarInput.addEventListener('change', function() {
@@ -1697,7 +1779,7 @@ function loadUserProfileData() {
 
             } else {
                 if (typeof renderLiveTouristBookings === 'function') renderLiveTouristBookings();
-                if (typeof renderLiveTouristReports === 'function') renderLiveTouristReports();
+                if (typeof renderMyReports === 'function') renderMyReports();
             }
         })
         .catch(error => {
@@ -1855,9 +1937,14 @@ function renderLiveTouristBookings() {
                                         <i class="bi bi-x-circle"></i> Cancel
                                     </button>
                                 ` : `
-                                    <span class="fw-bold small text-uppercase ${statusColor} pe-2" style="font-size: 0.85rem; letter-spacing: 0.8px;">
-                                        ${booking.status}
-                                    </span>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="fw-bold small text-uppercase ${statusColor} pe-2" style="font-size: 0.85rem; letter-spacing: 0.8px;">
+                                            ${booking.status}
+                                        </span>
+                                        <button class="btn btn-sm text-danger p-1" title="Delete from history" onclick="deleteTouristBooking('${booking.id}')">
+                                            <i class="bi bi-trash3-fill" style="font-size: 1.1rem;"></i>
+                                        </button>
+                                    </div>
                                 `}
                             </div>
 
@@ -2042,4 +2129,56 @@ function initLiveHazardMap() {
     } catch (err) {
         console.error("Leaflet full-screen contextual map processing blocked:", err);
     }
+}
+
+// FOR DELETING REPORTS
+function deleteReport(id) {
+    if (!confirm("Are you sure you want to permanently delete this safety report from your log history?")) {
+        return;
+    }
+
+    fetch(`backend/delete_report.php?id=${id}`)
+    .then(res => {
+        if (!res.ok) throw new Error("HTTP validation breakdown.");
+        return res.json();
+    })
+    .then(result => {
+        if (result.success) {
+            alert(result.message);
+            if (typeof renderMyReports === 'function') renderMyReports();
+        } else {
+            alert("Error: " + result.message);
+        }
+    })
+    .catch(error => {
+        console.error("Error executing report deletion cycle:", error);
+    });
+}
+
+// FOR DELETING BOOKINGS
+function deleteTouristBooking(bookingId) {
+    if (!confirm("Are you sure you want to remove and clear this booking record from your logs? This cannot be undone.")) {
+        return;
+    }
+
+    const payload = new FormData();
+    payload.append('booking_id', bookingId);
+
+    fetch('backend/delete_tourist_booking.php', {
+        method: 'POST',
+        body: payload
+    })
+    .then(res => res.json())
+    .then(result => {
+        if (result.success) {
+            alert(result.message);
+            if (typeof renderLiveTouristBookings === 'function') renderLiveTouristBookings();
+        } else {
+            alert("Delete Operation Failure: " + result.message);
+        }
+    })
+    .catch(error => {
+        console.error("Error executing safe data destruction pipeline:", error);
+        alert("Network communication timeout framework error.");
+    });
 }

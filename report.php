@@ -212,7 +212,6 @@ session_start();
                                     <select class="form-select" name="status" required>
                                         <option value="Dangerous">Dangerous</option>
                                         <option value="Warning">Warning</option>
-                                        <option value="Safe">Safe</option>
                                     </select>
                                 </div>
                                 <div class="col-md-6">

@@ -36,7 +36,7 @@ $user_role = $is_logged_in ? $_SESSION['role'] : '';
                 <div class="collapse navbar-collapse" id="surfNavbar">
                     <nav class="nav-pages mx-auto">
                         <a href="index.php">Home</a>
-                        <a href="marine_data.php">Marine Data</a>=
+                        <a href="marine_data.php">Marine Data</a>
                         <a href="report.php">Report</a>
                         <a href="about.php">About</a>
 

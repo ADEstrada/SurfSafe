@@ -120,6 +120,12 @@ session_start();
                                 <p id="detail-location" class="mb-0 fw-semibold">---</p>
                             </div>
                         </div>
+
+                        <div class="mb-4">
+                            <label class="text-muted small text-uppercase fw-bold d-block mb-1">Additional Notes / Requests</label>
+                            <p id="detail-notes" class="text-dark bg-light p-3 rounded border small mb-0" style="white-space: pre-wrap; font-style: italic;">---</p>
+                        </div>
+                        
                         <div id="complete-btn-container"></div>
                     </div>
                 </div>

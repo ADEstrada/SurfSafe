@@ -72,11 +72,10 @@ function renderCalendar() {
     for (let i = 1; i <= totalDays; i++) {
         const date = new Date(year, month, i);
 
-        const yyyy = date.getFullYear();
-        const mm = String(date.getMonth() + 1).padStart(2, '0');
-        const dd = String(date.getDate()).padStart(2, '0');
-        const dateISO = `${yyyy}-${mm}-${dd}`;
+        const offset = date.getTimezoneOffset();
+        const localDate = new Date(date.getTime() - (offset * 60 * 1000));
 
+        const dateISO = localDate.toISOString().split('T')[0];
         const isToday = date.toDateString() === new Date().toDateString();
 
         const dayLabel = date.toLocaleString('default', { weekday: 'short' });
@@ -388,8 +387,6 @@ function renderReportsQueue() {
             const queueBadge = document.getElementById('pending-count-badge');
             if (queueBadge) queueBadge.innerText = `${data.reports.length} New Hazard Reports`;
 
-            updateDashboardStatus(data.reports);
-
             if (data.reports.length === 0) {
                 queueContainer.innerHTML = `
                     <div class="text-center py-5 text-muted bg-white border rounded shadow-sm">
@@ -398,23 +395,23 @@ function renderReportsQueue() {
                     </div>`;
                 return;
             }
-            
-            queueContainer.innerHTML = data.reports.map(report => `
-                <div class="verification-item p-4 mb-3 border rounded-3 bg-white shadow-sm" 
-                     style="cursor: pointer;" 
-                     onclick="showReportDetails(${report.id}, this)">
-                    <h6 class="fw-bold text-uppercase mb-2" style="color: var(--surf-navy);">${report.reporter}</h6>
-                    <p class="small text-muted mb-3 text-truncate-2">${report.description}</p>
-                    <div class="d-flex align-items-center small text-primary">
-                        <i class="bi bi-geo-alt-fill me-2"></i>
-                        <span class="fw-semibold">${report.location}</span>
+                queueContainer.innerHTML = data.reports.map(report => `
+                    <div class="verification-item p-4 mb-3 border rounded-3 bg-white shadow-sm" 
+                         style="cursor: pointer;" 
+                         onclick="showReportDetails(${report.id}, this)">
+                        <h6 class="fw-bold text-uppercase mb-2" style="color: var(--surf-navy);">${report.reporter}</h6>
+                        <p class="small text-muted mb-3 text-truncate-2">${report.description}</p>
+                        <div class="d-flex align-items-center small text-primary">
+                            <i class="bi bi-geo-alt-fill me-2"></i>
+                            <span class="fw-semibold">${report.location}</span>
+                        </div>
                     </div>
-                </div>
-            `).join('');
-        }
-    })
-    .catch(error => console.error("Error executing admin verification fetch cycle:", error));
+                `).join('');
+            }
+        })
+        .catch(error => console.error("Error executing admin verification fetch cycle:", error));
 }
+
 // RIGHT SIDE - WHERE THE APPROVAL HAPPENS
 function showReportDetails(reportId, element) {
     const report = data.reports.find(r => r.id === reportId);
@@ -450,7 +447,6 @@ function updateStatusStyle(selectElement) {
 }
 
 function processReport(action) {
-
     const activeItem = document.querySelector('.verification-item.active');
     if (!activeItem) {
         alert("Please select a report from the queue container first!");
@@ -461,9 +457,8 @@ function processReport(action) {
     const reportId = onclickStr.match(/\d+/)[0];
 
     const finalStatus = document.getElementById('admin-status-override').value;
-    const reportName = document.getElementById('detail-hazard-type').innerText;
 
-    fetch(`backend/process_hazard.php?id=${reportId}&action=${action}`)
+    fetch(`backend/process_hazard.php?id=${reportId}&action=${action}&status=${finalStatus}`)
         .then(res => res.json())
         .then(result => {
             if (result.success) {
@@ -475,11 +470,11 @@ function processReport(action) {
                 activeItem.style.transform = "translateX(-30px)";
 
                 setTimeout(() => {
-                    // RESETS THE QUEUE TO SHOW THE DEFAULT "No Report Selected" PLACEHOLDER BOX
                     document.getElementById('no-selection-view').classList.remove('d-none');
                     document.getElementById('active-detail-view').classList.add('d-none');
-
                     renderReportsQueue();
+
+                    renderAdminActiveHazardsTable();
                 }, 400);
 
             } else {
@@ -492,7 +487,7 @@ function processReport(action) {
         });
 }
 
-// STATUS IN DASHBOARD 
+// STATUS IN DASHBOARD  
 async function updateDashboardStatus(currentReports = []) {
     const lat = 14.1369; // Bagasbas Beach
     const lon = 122.9813;
@@ -505,15 +500,10 @@ async function updateDashboardStatus(currentReports = []) {
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         
         const data = await response.json();
+        
+        const currentHour = new Date().getHours();
 
-        const now = new Date();
-        const currentIndex = data.hourly.time.findIndex(t => {
-            const d = new Date(t);
-            return d.getHours() === now.getHours() && d.getDate() === now.getDate();
-        });
-
-        const indexToUse = currentIndex !== -1 ? currentIndex : 0;
-        waveHeight = data.hourly?.wave_height?.[indexToUse] || 0.0;
+        waveHeight = data.hourly?.wave_height?.[currentHour] || data.hourly?.wave_height?.[0] || 0.0;
         
         console.log(`Real-time Wave Height fetched: ${waveHeight}m`);
     } catch (error) {
@@ -529,9 +519,9 @@ async function updateDashboardStatus(currentReports = []) {
     if (!banner) return;
 
     let status = "GOOD TO GO";
-    let badgeClass = "bg-light text-primary";
+    let badgeClass = "bg-success text-white"; 
     let progressColor = "#28a745"; 
-    let summary = "No major hazards reported in the last 4 hours.";
+    let summary = "Conditions are ideal for swimming and surfing. Enjoy the water!";
 
     let hasDangerous = false;
     try {
@@ -549,15 +539,31 @@ async function updateDashboardStatus(currentReports = []) {
     
     if (hasDangerous || waveHeight > 2.5) {
         status = "DANGEROUS";
-        badgeClass = "bg-white text-danger";
+        badgeClass = "bg-danger text-white";
         progressColor = "#dc3545"; 
-        summary = "Critical hazards detected! Coordination with lifeguards is advised.";
+        
+        if (hasDangerous && waveHeight > 2.5) {
+            summary = `CRITICAL: High waves (${waveHeight.toFixed(1)}m) and dangerous hazards reported! Stay out of the water.`;
+        } else if (waveHeight > 2.5) {
+            summary = `WARNING: Extremely high waves detected (${waveHeight.toFixed(1)}m). Conditions are unsafe for all activities.`;
+        } else {
+            summary = "DANGER: Critical hazards (e.g., strong currents or jellyfish) reported. Coordination with lifeguards is advised.";
+        }
     } 
     else if (waveHeight > 1.8 || (Array.isArray(currentReports) && currentReports.length > 0)) {
         status = "EXERCISE CAUTION";
         badgeClass = "bg-warning text-dark";
         progressColor = "#ffc107"; 
-        summary = "Moderate waves or minor hazards reported. Stay alert.";
+        
+        if (waveHeight > 1.8) {
+            summary = `Moderate swell detected (${waveHeight.toFixed(1)}m). Beginner surfers and swimmers should be extra careful.`;
+        } else {
+            summary = "Caution: Minor hazards reported by the community. Stay alert and monitor your surroundings.";
+        }
+    }
+
+    else {
+        summary = "Bagasbas Beach is looking great! No significant wave or hazard threats detected as of the moment.";
     }
         
     if (waveText) {
@@ -576,8 +582,10 @@ async function updateDashboardStatus(currentReports = []) {
     if (progressBar) {
         progressBar.style.backgroundColor = progressColor;
         progressBar.style.width = "100%";
+        progressBar.style.transition = "all 0.5s ease"; 
     }
 }
+
 
 // FOR THE TOTAL BOOKING MONTHLY GRAPH 
 let myAdminChartInstance = null; 
@@ -646,6 +654,8 @@ document.addEventListener('DOMContentLoaded', () => {
     renderCalendar();
     renderReportsQueue();
     initBookingsChart();
+
+    renderAdminActiveHazardsTable();
 
     setTimeout(fetchAndRenderCalendarShifts, 200);
 
@@ -782,6 +792,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         })
         .catch(error => console.error('Error executing master dashboard synchronization query:', error));
+
+
+    updateDashboardStatus(data.reports);
 });
 
 
@@ -950,4 +963,89 @@ function fetchAndRenderCalendarShifts() {
             });
         })
         .catch(error => console.error("Error compilation fetching calendar shifts:", error));
+}
+
+// FUNCTION SO THAT PUBLISH HAXARDS WILL RENDER IN THE TABLE
+function renderAdminActiveHazardsTable() {
+    const tableBody = document.getElementById('admin-active-hazards-table-body');
+    if (!tableBody) return;
+
+    fetch('backend/get_active_hazards.php')
+    .then(res => res.json())
+    .then(resData => {
+        if (resData.success) {
+            const activeHazards = resData.hazards;
+
+            if (activeHazards.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-muted small">
+                            <i class="bi bi-shield-check text-success me-1"></i> No active hazard threats are currently published on the live map.
+                        </td>
+                    </tr>`;
+                return;
+            }
+
+            tableBody.innerHTML = activeHazards.map(hazard => {
+                let badgeClass = "bg-success text-white";
+                if (hazard.status.toLowerCase() === 'dangerous') badgeClass = "bg-danger text-white";
+                else if (hazard.status.toLowerCase() === 'warning') badgeClass = "bg-warning text-dark";
+
+                return `
+                    <tr id="active-hazard-row-${hazard.id}">
+                        <td class="fw-bold text-uppercase small text-secondary">${hazard.hazard_type}</td>
+                        <td class="small text-truncate" style="max-width: 250px;" title="${hazard.description}">${hazard.description}</td>
+                        <td><span class="badge rounded-pill ${badgeClass} small fw-bold">${hazard.status.toUpperCase()}</span></td>
+                        <td class="small">${hazard.reporter}</td>
+                        <td class="small text-muted">${hazard.reported_at}</td>
+                        <td class="text-center">
+                            <button class="btn btn-sm btn-outline-success rounded-pill px-3 fw-bold" 
+                                    style="font-size: 11px;"
+                                    onclick="resolveLiveHazard(${hazard.id})">
+                                <i class="bi bi-check2-circle"></i> Resolve Issue
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+    })
+    .catch(error => {
+        console.error("Error compiler executing live active hazard table iteration:", error);
+        tableBody.innerHTML = `<tr><td colspan="6" class="text-danger text-center small py-3">Error connecting to public hazard stream data.</td></tr>`;
+    });
+}
+
+// FFUNCTION FOR THE BUTTON
+function resolveLiveHazard(hazardId) {
+    const rowElement = document.getElementById(`active-hazard-row-${hazardId}`);
+    
+    if (confirm(`Are you sure this beach hazard condition has been cleared and resolved?`)) {
+        fetch(`backend/resolve_hazard.php?id=${hazardId}`)
+        .then(res => res.json())
+        .then(result => {
+            if (result.success) {
+                alert(result.message);
+                
+                if (rowElement) {
+                    rowElement.style.transition = "all 0.4s ease";
+                    rowElement.style.backgroundColor = "#e8f5e9";
+                    rowElement.style.opacity = "0";
+                    
+                    setTimeout(() => {
+                       
+                        renderAdminActiveHazardsTable();
+                        
+                        if (typeof renderReportsQueue === 'function') renderReportsQueue();
+                    }, 400);
+                }
+            } else {
+                alert("Operation failure inside framework: " + result.message);
+            }
+        })
+        .catch(error => {
+            console.error("Asynchronous admin dispatch operation exception caught:", error);
+            alert("Network routing connection error.");
+        });
+    }
 }
