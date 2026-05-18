@@ -230,6 +230,21 @@ async function fetchMarineData() {
         console.log("WIND ARRAY:", marineData.daily.wind_speed_10m_max);
         console.log("Weather Hourly:", weatherData.hourly);
 
+
+        fetch('backend/check_weather_and_cancel.php')
+            .then(res => res.json())
+            .then(autoResult => {
+                if (autoResult.success && autoResult.cancelled_count > 0) {
+                    console.log(`SurfSafe Automation: ${autoResult.cancelled_count} booking slots automatically cancelled due to wave height warnings.`);
+                    
+                    if (typeof renderLiveTouristBookings === 'function') renderLiveTouristBookings();
+                    if (typeof renderBookings === 'function') renderBookings();
+                } else {
+                    console.log("SurfSafe Automation: " + autoResult.message);
+                }
+            })
+            .catch(err => console.warn("Background automation safety cycle deferred: ", err));
+
     } catch (error) {
         console.error("Architect Error: API could not be reached.", error);
     }

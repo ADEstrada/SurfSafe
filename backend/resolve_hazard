@@ -2,6 +2,8 @@
 session_start();
 include '../includes/db.php';
 
+// FOR FUNCTION OF RESOLVE HAZARDS
+
 header('Content-Type: application/json');
 
 error_reporting(E_ALL);

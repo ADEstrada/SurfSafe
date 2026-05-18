@@ -107,7 +107,7 @@ $user_role = $is_logged_in ? $_SESSION['role'] : '';
                 <div id="trainers-list" class="row g-4">
 
                 <!-- BAT DINAGDAG 'TO
-                    <div class="col-12 text-center py-5">
+                    <div class="col-12 text-center py-5">-
                         <div class="spinner-border text-primary" role="status"></div>
                         <p class="text-muted mt-2">Loading active shifts from Bagasbas Beach...</p>
                     </div>
