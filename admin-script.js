@@ -72,10 +72,11 @@ function renderCalendar() {
     for (let i = 1; i <= totalDays; i++) {
         const date = new Date(year, month, i);
 
-        const offset = date.getTimezoneOffset();
-        const localDate = new Date(date.getTime() - (offset * 60 * 1000));
+        const yyyy = date.getFullYear();
+        const mm = String(date.getMonth() + 1).padStart(2, '0');
+        const dd = String(date.getDate()).padStart(2, '0');
+        const dateISO = `${yyyy}-${mm}-${dd}`;
 
-        const dateISO = localDate.toISOString().split('T')[0];
         const isToday = date.toDateString() === new Date().toDateString();
 
         const dayLabel = date.toLocaleString('default', { weekday: 'short' });
@@ -387,6 +388,8 @@ function renderReportsQueue() {
             const queueBadge = document.getElementById('pending-count-badge');
             if (queueBadge) queueBadge.innerText = `${data.reports.length} New Hazard Reports`;
 
+            updateDashboardStatus(data.reports);
+
             if (data.reports.length === 0) {
                 queueContainer.innerHTML = `
                     <div class="text-center py-5 text-muted bg-white border rounded shadow-sm">
@@ -395,23 +398,23 @@ function renderReportsQueue() {
                     </div>`;
                 return;
             }
-                queueContainer.innerHTML = data.reports.map(report => `
-                    <div class="verification-item p-4 mb-3 border rounded-3 bg-white shadow-sm" 
-                         style="cursor: pointer;" 
-                         onclick="showReportDetails(${report.id}, this)">
-                        <h6 class="fw-bold text-uppercase mb-2" style="color: var(--surf-navy);">${report.reporter}</h6>
-                        <p class="small text-muted mb-3 text-truncate-2">${report.description}</p>
-                        <div class="d-flex align-items-center small text-primary">
-                            <i class="bi bi-geo-alt-fill me-2"></i>
-                            <span class="fw-semibold">${report.location}</span>
-                        </div>
+            
+            queueContainer.innerHTML = data.reports.map(report => `
+                <div class="verification-item p-4 mb-3 border rounded-3 bg-white shadow-sm" 
+                     style="cursor: pointer;" 
+                     onclick="showReportDetails(${report.id}, this)">
+                    <h6 class="fw-bold text-uppercase mb-2" style="color: var(--surf-navy);">${report.reporter}</h6>
+                    <p class="small text-muted mb-3 text-truncate-2">${report.description}</p>
+                    <div class="d-flex align-items-center small text-primary">
+                        <i class="bi bi-geo-alt-fill me-2"></i>
+                        <span class="fw-semibold">${report.location}</span>
                     </div>
-                `).join('');
-            }
-        })
-        .catch(error => console.error("Error executing admin verification fetch cycle:", error));
+                </div>
+            `).join('');
+        }
+    })
+    .catch(error => console.error("Error executing admin verification fetch cycle:", error));
 }
-
 // RIGHT SIDE - WHERE THE APPROVAL HAPPENS
 function showReportDetails(reportId, element) {
     const report = data.reports.find(r => r.id === reportId);
@@ -502,9 +505,15 @@ async function updateDashboardStatus(currentReports = []) {
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         
         const data = await response.json();
-        
-        const currentHour = new Date().getHours();
-        waveHeight = data.hourly?.wave_height?.[currentHour] || data.hourly?.wave_height?.[0] || 0.0;
+
+        const now = new Date();
+        const currentIndex = data.hourly.time.findIndex(t => {
+            const d = new Date(t);
+            return d.getHours() === now.getHours() && d.getDate() === now.getDate();
+        });
+
+        const indexToUse = currentIndex !== -1 ? currentIndex : 0;
+        waveHeight = data.hourly?.wave_height?.[indexToUse] || 0.0;
         
         console.log(`Real-time Wave Height fetched: ${waveHeight}m`);
     } catch (error) {
@@ -773,9 +782,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         })
         .catch(error => console.error('Error executing master dashboard synchronization query:', error));
-
-
-    updateDashboardStatus(data.reports);
 });
 
 

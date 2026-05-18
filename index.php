@@ -151,9 +151,11 @@ session_start();
                         <p class="hazard-section-subtitle">Real-time visualization of Bagasbas beach safety status. From currents to jellyfish sightings, stay informed before you hit the water.</p>
                     </div>
 
-                    <div class="map-container">
-                        <div id="hazard-map-api" class="map-placeholder d-flex align-items-center justify-content-center">
-                                    <a href="hazard_map.php" class="btn-full-map">VIEW FULL MAP</a>
+                   <div class="map-container">
+                        <div id="hazard-map-api" class="map-placeholder"></div>
+
+                        <div class="map-overlay">
+                            <a href="report.php#hazard-map-section" class="btn-full-map">VIEW FULL MAP</a>
                         </div>
                     </div>
 
@@ -302,6 +304,7 @@ session_start();
             </footer>
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
         <script src="script.js"></script>
 
 </html>

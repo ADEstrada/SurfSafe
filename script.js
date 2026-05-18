@@ -124,8 +124,17 @@ function updateSurfCondition(hourlyData) {
     const targetEl = document.getElementById('surf-condition');
     if (!targetEl) return;
 
-    const wave = hourlyData.wave_height[0];
-    const wind = hourlyData.wind_speed_10m[0];
+    const now = new Date();
+    
+    const currentIndex = hourlyData.time.findIndex(t => {
+        const d = new Date(t);
+        return d.getHours() === now.getHours() && d.getDate() === now.getDate();
+    });
+
+    const indexToUse = currentIndex !== -1 ? currentIndex : 0;
+
+    const wave = hourlyData.wave_height[indexToUse];
+    const wind = hourlyData.wind_speed_10m[indexToUse];
 
     let condition = "POOR";
 
@@ -136,6 +145,14 @@ function updateSurfCondition(hourlyData) {
     }
 
     targetEl.innerText = condition;
+
+    if (condition === "GOOD") {
+        targetEl.style.color = "#198754"; 
+    } else if (condition === "FAIR") {
+        targetEl.style.color = "#ffc107"; 
+    } else {
+        targetEl.style.color = "#dc3545"; 
+    }
 }
 
 // HOURLY WAVE HEIGHT GRAPH - marine_data.html 
@@ -278,7 +295,7 @@ function updateTideInfo(tideData) {
 
 // BEST SURFING WINDOW
 function calculateBestSurfWindow(hourlyData) {
-    if (!hourlyData) return;
+    if (!hourlyData || !hourlyData.time || !hourlyData.wave_height) return;
 
     const targetEl = document.getElementById('best-time-window');
     if (!targetEl) return;
@@ -286,9 +303,14 @@ function calculateBestSurfWindow(hourlyData) {
     let bestIndex = 0;
     let bestScore = -Infinity;
 
-    for (let i = 0; i < hourlyData.wave_height.length; i++) {
+    const hoursToLoop = Math.min(24, hourlyData.wave_height.length);
+
+    for (let i = 0; i < hoursToLoop; i++) {
         const wave = hourlyData.wave_height[i];
         const wind = hourlyData.wind_speed_10m[i];
+        
+        if (wave === undefined || wind === undefined) continue;
+
         const score = wave - (wind * 0.1);
 
         if (score > bestScore) {
@@ -297,9 +319,19 @@ function calculateBestSurfWindow(hourlyData) {
         }
     }
 
-    const bestTime = new Date(hourlyData.time[bestIndex]).getHours() + ":00";
-    targetEl.innerText = bestTime;
+    const bestTimeDate = new Date(hourlyData.time[bestIndex]);
+    
+    const formattedTime = bestTimeDate.toLocaleTimeString([], {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+    });
+
+
+    targetEl.innerText = formattedTime;
 }
+
+let myTideChart;
 
 // TIDE CHART - marine_data.html 
 function setupTideChart() {
@@ -377,7 +409,7 @@ async function fetchTideData() {
 
             // CHANGE - JUST MESSAGE
             headers: {
-                'Authorization': 'df81498c-5134-11f1-b37b-0242ac120004-df8149f0-5134-11f1-b37b-0242ac120004'
+                'Authorization': '2609a4e0-5229-11f1-b099-0242ac120004-2609a666-5229-11f1-b099-0242ac120004'
             }
         });
 
@@ -1876,7 +1908,6 @@ function initHomepageMapPreview() {
     const previewEl = document.getElementById('hazard-map-api');
     if (!previewEl) return;
 
-    // Isara sa isang malinis na try-catch block para kung mag-error ang network layer, tuloy pa rin ang agos ng script
     try {
         const mapPreview = L.map('hazard-map-api', {
             zoomControl: false,
@@ -1902,10 +1933,10 @@ function initHomepageMapPreview() {
                 if (!res.ok) {
                     throw new Error("Server returned status " + res.status);
                 }
-                return res.text(); // Kunin muna bilang plain text para ma-verify kung valid JSON
+                return res.text();
             })
             .then(text => {
-                // Safety checkpoint para malaman kung html error code ang binalik ng PHP
+               
                 if (text.trim().startsWith('<')) {
                     console.error("Backend Error: 'get_active_hazards.php' outputted HTML error layout instead of clear JSON data.");
                     return;
