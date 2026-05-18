@@ -487,13 +487,17 @@ function processReport(action) {
         });
 }
 
-// STATUS IN DASHBOARD  
+// STATUS IN DASHBOARD (With Nighttime Guard Activation)
 async function updateDashboardStatus(currentReports = []) {
     const lat = 14.1369; // Bagasbas Beach
     const lon = 122.9813;
+    
+    // Kinuha natin ang buong linggong saklaw para sa hourly monitoring
     const marineUrl = `https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lon}&hourly=wave_height&timezone=auto`;
 
     let waveHeight = 0.0; 
+    const now = new Date();
+    const currentHour = now.getHours();
 
     try {
         const response = await fetch(marineUrl);
@@ -501,9 +505,17 @@ async function updateDashboardStatus(currentReports = []) {
         
         const data = await response.json();
         
-        const currentHour = new Date().getHours();
+        // INAYOS DITO: Tumpak nating hinahanap ang index kung saan tugma ang Taon, Buwan, Araw, at Oras para iwas bug sa magkasunod na araw
+        const currentIndex = data.hourly?.time?.findIndex(t => {
+            const d = new Date(t);
+            return d.getDate() === now.getDate() && 
+                   d.getMonth() === now.getMonth() && 
+                   d.getFullYear() === now.getFullYear() && 
+                   d.getHours() === currentHour;
+        });
 
-        waveHeight = data.hourly?.wave_height?.[currentHour] || data.hourly?.wave_height?.[0] || 0.0;
+        const indexToUse = currentIndex !== -1 ? currentIndex : 0;
+        waveHeight = data.hourly?.wave_height?.[indexToUse] || 0.0;
         
         console.log(`Real-time Wave Height fetched: ${waveHeight}m`);
     } catch (error) {
@@ -518,6 +530,7 @@ async function updateDashboardStatus(currentReports = []) {
 
     if (!banner) return;
 
+    // Default parameters (Daylight operational limits template)
     let status = "GOOD TO GO";
     let badgeClass = "bg-success text-white"; 
     let progressColor = "#28a745"; 
@@ -537,7 +550,18 @@ async function updateDashboardStatus(currentReports = []) {
         console.warn("Hazard check failed, defaulting to safe layout parsing:", err);
     }
     
-    if (hasDangerous || waveHeight > 2.5) {
+    // =========================================================================
+    // HETO ANG DAGDAG NA NIGHTTIME TIME GUARD LOGIC:
+    // Kung ang kasalukuyang oras ng gabi ay 7:00 PM (19) pataas hanggang 5:00 AM (5) ng madaling araw:
+    // =========================================================================
+    if (currentHour >= 19 || currentHour < 5) {
+        status = "CLOSED";
+        badgeClass = "bg-dark text-white";
+        progressColor = "#6c757d"; // Gray progress bar link indicator
+        summary = "Bagasbas Beach surfing and swimming zones are currently CLOSED for the night. Swimming in the dark is highly dangerous.";
+    } 
+    // Opsyonal: Kung hindi pa gabi, doon pa lang nito babasahin ang mga Critical Hazards at Alon:
+    else if (hasDangerous || waveHeight > 2.5) {
         status = "DANGEROUS";
         badgeClass = "bg-danger text-white";
         progressColor = "#dc3545"; 
@@ -560,9 +584,121 @@ async function updateDashboardStatus(currentReports = []) {
         } else {
             summary = "Caution: Minor hazards reported by the community. Stay alert and monitor your surroundings.";
         }
+    } else {
+        summary = "Bagasbas Beach is looking great! No significant wave or hazard threats detected as of the moment.";
+    }
+    // =========================================================================
+        
+    if (waveText) {
+        waveText.innerText = `${waveHeight.toFixed(1)}m`;
     }
 
-    else {
+    if (badge) {
+        badge.innerText = status;
+        badge.className = `badge rounded-pill px-3 py-2 ${badgeClass}`;
+    }
+
+    if (hazardText) {
+        hazardText.innerText = summary;
+    }
+    
+    if (progressBar) {
+        progressBar.style.backgroundColor = progressColor;
+        progressBar.style.width = "100%";
+        progressBar.style.transition = "all 0.5s ease"; 
+    }
+}// STATUS IN DASHBOARD (With Nighttime Guard Activation)
+async function updateDashboardStatus(currentReports = []) {
+    const lat = 14.1369; // Bagasbas Beach
+    const lon = 122.9813;
+    
+    const marineUrl = `https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lon}&hourly=wave_height&timezone=auto`;
+
+    let waveHeight = 0.0; 
+    const now = new Date();
+    const currentHour = now.getHours();
+
+    try {
+        const response = await fetch(marineUrl);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        
+        const data = await response.json();
+        
+        // INAYOS DITO: Tumpak nating hinahanap ang index kung saan tugma ang Taon, Buwan, Araw, at Oras para iwas bug sa magkasunod na araw
+        const currentIndex = data.hourly?.time?.findIndex(t => {
+            const d = new Date(t);
+            return d.getDate() === now.getDate() && 
+                   d.getMonth() === now.getMonth() && 
+                   d.getFullYear() === now.getFullYear() && 
+                   d.getHours() === currentHour;
+        });
+
+        const indexToUse = currentIndex !== -1 ? currentIndex : 0;
+        waveHeight = data.hourly?.wave_height?.[indexToUse] || 0.0;
+        
+        console.log(`Real-time Wave Height fetched: ${waveHeight}m`);
+    } catch (error) {
+        console.error("Lead Architect API Error: Could not update dashboard in real-time.", error);
+    }
+
+    const banner = document.getElementById('status-banner-container');
+    const badge = document.getElementById('status-badge');
+    const progressBar = document.getElementById('status-progress-bar');
+    const waveText = document.getElementById('current-wave-height');
+    const hazardText = document.getElementById('hazard-summary');
+
+    if (!banner) return;
+
+    // Default parameters (Daylight operational limits template)
+    let status = "GOOD TO GO";
+    let badgeClass = "bg-success text-white"; 
+    let progressColor = "#28a745"; 
+    let summary = "Conditions are ideal for swimming and surfing. Enjoy the water!";
+
+    let hasDangerous = false;
+    try {
+        if (Array.isArray(currentReports) && currentReports.length > 0) {
+            hasDangerous = currentReports.some(r => {
+                if (typeof getHazardStatus === "function") {
+                    return getHazardStatus(r.hazard_type)?.status === "Dangerous";
+                }
+                return r.hazard_type === "Dangerous" || r.status === "Dangerous";
+            });
+        }
+    } catch (err) {
+        console.warn("Hazard check failed, defaulting to safe layout parsing:", err);
+    }
+    
+    if (currentHour >= 19 || currentHour < 5) {
+        status = "CLOSED";
+        badgeClass = "bg-dark text-white";
+        progressColor = "#6c757d"; 
+        summary = "Bagasbas Beach surfing and swimming zones are currently CLOSED for the night. Swimming in the dark is highly dangerous.";
+    } 
+    else if (hasDangerous || waveHeight > 2.5) {
+        status = "DANGEROUS";
+        badgeClass = "bg-danger text-white";
+        progressColor = "#dc3545"; 
+        
+        if (hasDangerous && waveHeight > 2.5) {
+            summary = `CRITICAL: High waves (${waveHeight.toFixed(1)}m) and dangerous hazards reported! Stay out of the water.`;
+        } else if (waveHeight > 2.5) {
+            summary = `WARNING: Extremely high waves detected (${waveHeight.toFixed(1)}m). Conditions are unsafe for all activities.`;
+        } else {
+            summary = "DANGER: Critical hazards (e.g., strong currents or jellyfish) reported. Coordination with lifeguards is advised.";
+        }
+    } 
+    else if (waveHeight > 1.8 || (Array.isArray(currentReports) && currentReports.length > 0)) {
+        status = "EXERCISE CAUTION";
+        badgeClass = "bg-warning text-dark";
+        progressColor = "#ffc107"; 
+        
+        if (waveHeight > 1.8) {
+            summary = `Moderate swell detected (${waveHeight.toFixed(1)}m). Beginner surfers and swimmers should be extra careful.`;
+        } else {
+            summary = "Caution: Minor hazards reported by the community. Stay alert and monitor your surroundings.";
+        }
+    } else {
         summary = "Bagasbas Beach is looking great! No significant wave or hazard threats detected as of the moment.";
     }
         

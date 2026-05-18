@@ -19,7 +19,6 @@ $ch = curl_init();
 curl_setopt($ch, CURLOPT_URL, $marineUrl);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 $apiResponse = curl_exec($ch);
-curl_close($ch);
 
 if (!$apiResponse) {
     $response['message'] = "Failed to connect to Open-Meteo API stream.";

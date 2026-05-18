@@ -3,11 +3,9 @@ session_start();
 ?>
 
 <!DOCTYPE html>
-
 <html lang="en">
 
     <head>
-
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
         <title>SurfSafe - About</title>
@@ -16,12 +14,66 @@ session_start();
         <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="css/style.css">
-
+        
+        <style>
+            .dictionary-card, .legend-card {
+                background: #ffffff;
+                border-radius: 16px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+                padding: 30px;
+                height: 100%;
+            }
+            .param-item {
+                margin-bottom: 25px;
+            }
+            .param-item:last-child {
+                margin-bottom: 0;
+            }
+            .legend-item {
+                border-bottom: 1px solid #f1f3f5;
+                padding-bottom: 20px;
+                margin-bottom: 20px;
+                gap: 20px;
+            }
+            .legend-item:last-child {
+                border-bottom: none;
+                padding-bottom: 0;
+                margin-bottom: 0;
+            }
+            .badge-wrapper {
+                flex-shrink: 0;
+                width: 160px; /* Eksaktong lapad para maging pantay-pantay ang lahat ng pills */
+            }
+            .responsive-badge {
+                width: 100%;
+                text-align: center;
+                font-size: 11px;
+                font-weight: 700;
+                letter-spacing: 0.5px;
+                padding: 10px 12px !important;
+                display: inline-block;
+                white-space: nowrap; /* Pinipigilan maputol ang text ng badge */
+            }
+            @media (max-width: 576px) {
+                .legend-item {
+                    flex-direction: column !important;
+                    align-items: start !important;
+                    gap: 8px;
+                }
+                .badge-wrapper {
+                    width: 100%;
+                    min-width: 100%;
+                }
+                .responsive-badge {
+                    white-space: normal;
+                }
+            }
+        </style>
     </head>
 
     <body>
 
-    <header class="navbar navbar-expand-md sticky-top shadow-sm">
+        <header class="navbar navbar-expand-md sticky-top shadow-sm">
             <div class="header-container">
                 <img src="assets/logo.svg" alt="SurfSafe Logo" class="logo-icon">
 
@@ -99,7 +151,7 @@ session_start();
                 </div>
             </section>
 
-            <section class="about-pillars py-5">
+            <section class="about-pillars py-5 bg-light">
                 <div class="container">
                     <div class="row g-4">
                         <div class="col-md-4">
@@ -113,7 +165,7 @@ session_start();
                             <div class="pillar-card">
                                 <div class="pillar-icon"><i class="bi bi-people"></i></div>
                                 <h5>Community Alerts</h5>
-                                <p>A live hazard module where  surfers and lifeguards pin real-time threats to protect the community.</p>
+                                <p>A live hazard module where surfers and lifeguards pin real-time threats to protect the community.</p>
                             </div>
                         </div>
                         <div class="col-md-4">
@@ -121,6 +173,89 @@ session_start();
                                 <div class="pillar-icon"><i class="bi bi-shield-check"></i></div>
                                 <h5>Smart Booking</h5>
                                 <p>Verified trainers coupled with automated safety checks to ensure ideal surfing conditions.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="marine-dictionary py-5">
+                <div class="container">
+                    <div class="text-center mb-5">
+                        <h2 class="fw-bold" style="color: var(--surf-navy);">MARINE DATA DICTIONARY</h2>
+                        <p class="text-muted small">Understand and interpret our forecasting matrix parameters effectively.</p>
+                    </div>
+
+                    <div class="row g-4">
+                        <div class="col-lg-7">
+                            <div class="dictionary-card">
+                                <h4 class="fw-bold mb-4" style="color: var(--surf-navy);"><i class="bi bi-book me-2"></i>Key Oceanographic Metrics</h4>
+                                
+                                <div class="param-item">
+                                    <h6 class="fw-bold text-primary mb-1">Wave Height</h6>
+                                    <p class="small text-muted mb-0">Measured in meters (m). This represents the vertical distance between the crest (top) and the trough (bottom) of a wave. While a range of 0.5m to 1.2m is ideal for beginners, heights exceeding 2.5m present hazardous conditions.</p>
+                                </div>
+
+                                <div class="param-item">
+                                    <h6 class="fw-bold text-primary mb-1">Swell / Wave Period</h6>
+                                    <p class="small text-muted mb-0">Measured in seconds (s). This tracks the time it takes for two consecutive wave crests to pass a fixed point. A higher period (8s - 12s) translates to cleaner, more structured, and high-energy waves optimal for surfing.</p>
+                                </div>
+
+                                <div class="param-item">
+                                    <h6 class="fw-bold text-primary mb-1">Wind Speed & Direction</h6>
+                                    <p class="small text-muted mb-0">Winds blowing from the shore to the ocean (Offshore) groom wave faces for clean rides. Conversely, strong winds blowing from the sea toward land (Onshore) exceeding 20 kph degrade wave quality and cause choppy, unrideable conditions.</p>
+                                </div>
+
+                                <div class="param-item">
+                                    <h6 class="fw-bold text-primary mb-1">Tidal Cycles (High & Low Tide)</h6>
+                                    <p class="small text-muted mb-0">Driven by the lunar gravitational pull, fluctuating high and low tides completely alter break mechanics. Tidal shifts dictate how close to shore a wave breaks and how fast water depth changes across sandbars.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-5">
+                            <div class="legend-card">
+                                <h4 class="fw-bold mb-4" style="color: var(--surf-navy);"><i class="bi bi-shield-exclamation me-2"></i>Safety Condition Codes</h4>
+                                
+                                <div class="d-flex legend-item align-items-center">
+                                    <div class="badge-wrapper">
+                                        <span class="badge bg-success text-white rounded-pill responsive-badge">GOOD TO GO</span>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h6 class="fw-bold mb-1 text-success">Safe Conditions</h6>
+                                        <p class="text-muted mb-0 small" style="line-height: 1.4;">Wave heights remain below 1.8m with completely clear parameters and no active community hazard flags recorded on the live map feed.</p>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex legend-item align-items-center">
+                                    <div class="badge-wrapper">
+                                        <span class="badge bg-warning text-dark rounded-pill responsive-badge">EXERCISE CAUTION</span>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h6 class="fw-bold mb-1 text-warning text-dark">Moderate Risks</h6>
+                                        <p class="text-muted mb-0 small" style="line-height: 1.4;">Elevated wave heights (1.8m - 2.5m) or minor hazard logs reported. Recommended primarily for experienced surfers or accompanied beginners.</p>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex legend-item align-items-center">
+                                    <div class="badge-wrapper">
+                                        <span class="badge bg-danger text-white rounded-pill responsive-badge">DANGEROUS</span>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h6 class="fw-bold mb-1 text-danger">Strictly Prohibited</h6>
+                                        <p class="text-muted mb-0 small" style="line-height: 1.4;">Critical maritime warning! Wave heights surpass 2.5m, or active high-risk flags like severe Rip Currents or toxic jellyfish blooms are flagged.</p>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex legend-item align-items-center">
+                                    <div class="badge-wrapper">
+                                        <span class="badge bg-dark text-white rounded-pill responsive-badge">CLOSED</span>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h6 class="fw-bold mb-1 text-secondary">Beach Closed</h6>
+                                        <p class="text-muted mb-0 small" style="line-height: 1.4;">Nighttime operational restrictions apply after 7:00 PM. Surfing and swimming are strictly prohibited due to zero lighting conditions and unmonitored shorelines.</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

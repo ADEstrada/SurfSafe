@@ -120,15 +120,20 @@ function updateForecastCards(marineDaily, weatherDaily) {
 }
 
 // SURF WIND CONDITION
+// INAYOS NA SURF CONDITION INDEX LOOKUP
 function updateSurfCondition(hourlyData) {
     const targetEl = document.getElementById('surf-condition');
     if (!targetEl) return;
 
     const now = new Date();
     
+    // Itinama ang index alignment para sa kasalukuyang oras ng kasalukuyang araw
     const currentIndex = hourlyData.time.findIndex(t => {
         const d = new Date(t);
-        return d.getHours() === now.getHours() && d.getDate() === now.getDate();
+        return d.getDate() === now.getDate() && 
+               d.getMonth() === now.getMonth() && 
+               d.getFullYear() === now.getFullYear() && 
+               d.getHours() === now.getHours();
     });
 
     const indexToUse = currentIndex !== -1 ? currentIndex : 0;
@@ -250,11 +255,24 @@ async function fetchMarineData() {
     }
 }
 
-// WAVE CHART HOURLY DATA
+// INAYOS NA HOURLY CHART RENDERING (Kasalukuyang 24 Oras mula ngayon)
 function updateWaveChart(hourlyData) {
     if (!myWaveChart || !hourlyData) return;
 
-    const labels = hourlyData.time.slice(0, 24).map(t => {
+    const now = new Date();
+    
+    // Hinahanap ang index ng kasalukuyang oras para doon magsimula ang 24-hour graph block
+    const startIndex = hourlyData.time.findIndex(t => {
+        const d = new Date(t);
+        return d.getDate() === now.getDate() && 
+               d.getMonth() === now.getMonth() && 
+               d.getHours() === now.getHours();
+    });
+
+    const indexToUse = startIndex !== -1 ? startIndex : 0;
+
+    // Imbis na laging slice(0, 24) na fixed sa madaling araw, mag-si-slice tayo mula sa kasalukuyang oras pataas para laging abante ang graph
+    const labels = hourlyData.time.slice(indexToUse, indexToUse + 24).map(t => {
         const date = new Date(t);
         return date.toLocaleTimeString([], {
            hour: 'numeric',
@@ -263,7 +281,7 @@ function updateWaveChart(hourlyData) {
     });
 
     myWaveChart.data.labels = labels;
-    myWaveChart.data.datasets[0].data = hourlyData.wave_height.slice(0, 24);
+    myWaveChart.data.datasets[0].data = hourlyData.wave_height.slice(indexToUse, indexToUse + 24);
     myWaveChart.update();
 }
 
@@ -315,33 +333,48 @@ function calculateBestSurfWindow(hourlyData) {
     const targetEl = document.getElementById('best-time-window');
     if (!targetEl) return;
 
-    let bestIndex = 0;
+    let bestIndex = -1;
     let bestScore = -Infinity;
 
-    const hoursToLoop = Math.min(24, hourlyData.wave_height.length);
+    const now = new Date();
+    const todayDateStr = now.toDateString(); 
 
-    for (let i = 0; i < hoursToLoop; i++) {
+    for (let i = 0; i < hourlyData.time.length; i++) {
+        const entryTime = new Date(hourlyData.time[i]);
+        
+        if (entryTime.toDateString() !== todayDateStr || entryTime < now) {
+            continue;
+        }
+
+        if (entryTime.getHours() >= 19) {
+            continue;
+        }
+
         const wave = hourlyData.wave_height[i];
         const wind = hourlyData.wind_speed_10m[i];
-        
+        const period = hourlyData.wave_period ? hourlyData.wave_period[i] : 8;
+
         if (wave === undefined || wind === undefined) continue;
 
-        const score = wave - (wind * 0.1);
+        const surfScore = (wave * 3) + (period * 1.5) - (wind * 0.2);
 
-        if (score > bestScore) {
-            bestScore = score;
+        if (surfScore > bestScore) {
+            bestScore = surfScore;
             bestIndex = i;
         }
     }
 
+    if (bestIndex === -1) {
+        targetEl.innerText = "Closed (Check Tomorrow)";
+        return;
+    }
+
     const bestTimeDate = new Date(hourlyData.time[bestIndex]);
-    
     const formattedTime = bestTimeDate.toLocaleTimeString([], {
         hour: 'numeric',
         minute: '2-digit',
         hour12: true
     });
-
 
     targetEl.innerText = formattedTime;
 }
@@ -424,7 +457,7 @@ async function fetchTideData() {
 
             // CHANGE - JUST MESSAGE
             headers: {
-                'Authorization': '2609a4e0-5229-11f1-b099-0242ac120004-2609a666-5229-11f1-b099-0242ac120004'
+                'Authorization': '23a98d10-446d-11f1-be04-0242ac120004-23a98eaa-446d-11f1-be04-0242ac120004'
             }
         });
 
@@ -502,9 +535,13 @@ function updateTideSummary() {
 // BOTTOM WEATHER DETAILS
 function updateWeatherDetails(weatherHourly, marineHourly) {
     const now = new Date();
+    
     const currentIndex = weatherHourly.time.findIndex(t => {
-    const d = new Date(t);
-        return d.getHours() === now.getHours() && d.getDate() === now.getDate();
+        const d = new Date(t);
+        return d.getDate() === now.getDate() && 
+               d.getMonth() === now.getMonth() && 
+               d.getFullYear() === now.getFullYear() && 
+               d.getHours() === now.getHours();
     });
 
     if (currentIndex === -1) return;
@@ -2126,7 +2163,7 @@ function initLiveHazardMap() {
                         <div style="min-width:220px;">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <h6 class="fw-bold mb-0">${hazard.hazard_type}</h6>
-                                <span class="badge bg-${badgeColor}====">${hazard.status}</span>
+                                <span class="badge bg-${badgeColor}">${hazard.status}</span>
                             </div>
                             <p class="small text-muted mb-2">${hazard.description}</p>
                             <hr>
