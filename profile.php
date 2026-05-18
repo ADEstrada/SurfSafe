@@ -5,9 +5,8 @@ if (!isset($_SESSION['user_id'])) {
     header("Location: login.html");
     exit();
 }
-$user_role = $_SESSION['role'];
-$first_name = $_SESSION['first_name'];
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -24,53 +23,59 @@ $first_name = $_SESSION['first_name'];
 <body>
 
     <header class="navbar navbar-expand-md sticky-top shadow-sm">
-        <div class="header-container">
-            <img src="assets/logo.svg" alt="SurfSafe Logo" class="logo-icon">
+            <div class="header-container">
+                <img src="assets/logo.svg" alt="SurfSafe Logo" class="logo-icon">
 
-            <button class="navbar-toggler custom-hamburger" type="button" data-bs-toggle="collapse" data-bs-target="#surfNavbar">
-                <div class="hamburger-lines">
-                    <span class="line line1"></span>
-                    <span class="line line2"></span>
-                    <span class="line line3"></span>
-                </div>
-            </button>
+                <button class="navbar-toggler custom-hamburger collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#surfNavbar">
+                    <div class="hamburger-lines">
+                        <span class="line line1"></span>
+                        <span class="line line2"></span>
+                        <span class="line line3"></span>
+                    </div>
+                </button>
 
-            <div class="collapse navbar-collapse" id="surfNavbar">
-                <nav class="nav-pages mx-auto">
-                    <a href="index.php">Home</a>
-                    <a href="marine_data.php">Marine Data</a>
-                    <a href="hazard_map.php">Hazard Map</a>
-                    <a href="report.php">Report</a>
-                    <a href="about.php">About</a>
-                    <a href="trainers.php" id="nav-book-trainer" class="<?php echo (isset($_SESSION['role']) && $_SESSION['role'] === 'Admin') ? 'd-none' : ''; ?>">Trainers</a>
-                    <a href="my_bookings.php" id="nav-my-bookings" class="d-none">My Bookings</a>
-                </nav>
+                <div class="collapse navbar-collapse" id="surfNavbar">
+                    <nav class="nav-pages mx-auto">
+                        <a href="index.php">Home</a>
+                        <a href="marine_data.php">Marine Data</a>
+                        <a href="report.php">Report</a>
+                        <a href="about.php">About</a>
 
-                <div class="auth-wrapper">
-                    <?php if (isset($_SESSION['user_id'])): ?>
-                        <div id="user-profile-section">
-                            <div class="dropdown">
-                                <a href="#" class="profile-link d-flex align-items-center dropdown-toggle" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="bi bi-person-circle profile-nav-icon"></i>
-                                    <span class="ms-2"><?php echo htmlspecialchars($_SESSION['first_name']); ?></span>
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="profileDropdown">
-                                    <li><a class="dropdown-item" href="profile.php"><i class="bi bi-pencil-square me-2"></i>Edit Profile</a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item text-danger" href="backend/logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
-                                </ul>
+                        <?php if (isset($_SESSION['user_id'])): ?>
+                            <a href="trainers.php" id="nav-book-trainer">Trainers</a>
+                            
+                            <?php if ($_SESSION['role'] === 'Trainer'): ?>
+                                <a href="my_bookings.php" id="nav-my-bookings">My Bookings</a>
+                            <?php endif; ?>
+                        <?php endif; ?>
+                    </nav>
+
+                    <div class="auth-wrapper">
+                        <?php if (!isset($_SESSION['user_id'])): ?>
+                            <div id="auth-controls" class="auth-buttons">
+                                <a href="login.html" class="btn-login">Login</a>
+                                <a href="signup.html" class="btn-signup">Sign Up</a>
                             </div>
-                        </div>
-                    <?php else: ?>
-                        <div id="auth-controls" class="auth-buttons">
-                            <a href="login.html" class="btn-login">Login</a>
-                            <a href="signup.html" class="btn-signup">Sign Up</a>
-                        </div>
-                    <?php endif; ?>
+                        <?php else: ?>
+                            <div id="user-profile-section">
+                                <div class="dropdown">
+                                    <a href="#" class="profile-link d-flex align-items-center dropdown-toggle" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="bi bi-person-circle profile-nav-icon"></i>
+                                        <span class="ms-2"><?php echo htmlspecialchars($_SESSION['first_name']); ?></span>
+                                    </a>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="profileDropdown">
+                                        <li><a class="dropdown-item" href="profile.php"><i class="bi bi-pencil-square me-2"></i>Edit Profile</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item text-danger" href="backend/logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+
                 </div>
             </div>
-        </div>
-    </header>
+        </header>
 
     <div class="profile-container mt-4">
         <form id="profileForm" enctype="multipart/form-data">
@@ -228,8 +233,6 @@ $first_name = $_SESSION['first_name'];
 
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- BAT MAY NUMBER -->
     <script src="script.js?v=102"></script>
 </body>
 </html>
