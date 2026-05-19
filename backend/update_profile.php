@@ -41,7 +41,7 @@ if (!isset($_SESSION['user_id'])) {
                 $fileExtension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
                 
                 $avatar_filename = time() . '_' . $user_id . '_avatar.' . $fileExtension;
-                $uploadFileDir = 'uploads/';
+                $uploadFileDir = '../uploads/';
                 
                 if (!is_dir($uploadFileDir)) {
                     mkdir($uploadFileDir, 0755, true);

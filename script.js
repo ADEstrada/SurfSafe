@@ -1767,7 +1767,13 @@ function loadUserProfileData() {
             if (isViewingHomepage) {
                 const profileIsUncomplete = data.profile_completed == 0 || data.profile_completed === false;
 
-                if (profileIsUncomplete) {
+                if (profileIsUncomplete && data.role === 'Trainer') {
+                    const trainerSetupModal = document.getElementById('trainerProfileSetupModal');
+                    if (trainerSetupModal) {
+                        const trainerPopup = new bootstrap.Modal(trainerSetupModal);
+                        trainerPopup.show();
+                    }
+                } else if (profileIsUncomplete) {
                     const nudgeModalElement = document.getElementById('touristFirstTimeModal');
                     if (nudgeModalElement) {
                         const touristPopup = new bootstrap.Modal(nudgeModalElement);

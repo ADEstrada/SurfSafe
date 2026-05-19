@@ -5,9 +5,9 @@ error_reporting(0);
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-require 'includes/PHPMailer/Exception.php';
-require 'includes/PHPMailer/PHPMailer.php';
-require 'includes/PHPMailer/SMTP.php';
+require '../includes/PHPMailer/Exception.php';
+require '../includes/PHPMailer/PHPMailer.php';
+require '../includes/PHPMailer/SMTP.php';
 
 include '../includes/db.php';
 
@@ -44,7 +44,15 @@ if (isset($_GET['id']) && isset($_GET['status'])) {
                 $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
                 $mail->Port       = 587;
 
-                $mail->setFrom('YOUR_GMAIL@gmail.com', 'SurfSafe Bagasbas Admin');
+                $mail->SMTPOptions = array(
+                    'ssl' => array(
+                        'verify_peer' => false,
+                        'verify_peer_name' => false,
+                        'allow_self_signed' => true
+                    )
+                );
+
+                $mail->setFrom('surfsafebagasbas@gmail.com', 'SurfSafe Bagasbas Admin');
                 $mail->addAddress($to, $name); 
 
                 $mail->isHTML(true);

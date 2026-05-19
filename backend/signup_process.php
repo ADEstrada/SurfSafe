@@ -16,8 +16,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (mysqli_query($conn, $sql)) {
         $user_id = mysqli_insert_id($conn);
 
-        if ($role === 'Trainer') {
-            $target_dir = "uploads/";
+if ($role === 'Trainer') {
+            // FIX: Point one level up to the main SurfSafe/uploads folder
+            $target_dir = "../uploads/"; 
+            
+            // FIX: Create the folder automatically if it doesn't exist
+            if (!file_exists($target_dir)) {
+                mkdir($target_dir, 0777, true);
+            }
             
             $file_map = [
                 'dotCert' => 'dot_cert',
@@ -33,6 +39,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $unique_name = "";
                 if (!empty($_FILES[$html_name]["name"])) {
                     $unique_name = time() . "_" . $user_id . "_" . basename($_FILES[$html_name]["name"]);
+                    
+                    // Move the file to the corrected ../uploads/ folder
                     move_uploaded_file($_FILES[$html_name]["tmp_name"], $target_dir . $unique_name);
                 }
                 $db_values[$db_col] = $unique_name;
@@ -49,8 +57,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             mysqli_query($conn, $p_sql);
 
             echo "<script>alert('Application submitted! Admin will review your documents.'); window.location.href='../login.html';</script>";
-        } else {
-            echo "<script>alert('Signup successful!'); window.location.href='../login.html';</script>";
         }
     }
 }
