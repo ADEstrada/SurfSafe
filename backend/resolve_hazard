@@ -1,0 +1,37 @@
+<?php
+session_start();
+include '../includes/db.php';
+
+// FOR FUNCTION OF RESOLVE HAZARDS
+
+header('Content-Type: application/json');
+
+error_reporting(E_ALL);
+ini_set('display_errors', 0);
+
+$response = ['success' => false, 'message' => ''];
+
+if (isset($_SESSION['role']) && $_SESSION['role'] === 'Admin') {
+    if (!isset($_GET['id'])) {
+        $response['message'] = "Missing targeted validation identifier token.";
+        echo json_encode($response);
+        exit();
+    }
+
+    $report_id = intval($_GET['id']);
+
+    $query = "UPDATE hazard_reports SET verification_status = 'Resolved' WHERE id = $report_id";
+
+    if (mysqli_query($conn, $query)) {
+        $response['success'] = true;
+        $response['message'] = "Hazard status successfully updated to Resolved and cleared from active maps!";
+    } else {
+        $response['message'] = "Database mutation operation crash: " . mysqli_error($conn);
+    }
+} else {
+    $response['message'] = "Unauthorized security layer block.";
+}
+
+echo json_encode($response);
+exit();
+?>

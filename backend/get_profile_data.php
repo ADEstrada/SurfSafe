@@ -55,6 +55,7 @@ if (isset($_SESSION['user_id'])) {
             $response['experience'] = $trainerRow['experience_years'] ?? '';
             $response['specialization'] = $trainerRow['specialization'] ?? '';
             $response['bio'] = $trainerRow['bio'] ?? '';
+            $response['profile_completed'] = isset($trainerRow['profile_completed']) ? (int)$trainerRow['profile_completed'] : 0;
             
             $response['documents']['dot_cert'] = $trainerRow['dot_cert'] ?? '';
             $response['documents']['training_cert'] = $trainerRow['training_cert'] ?? '';

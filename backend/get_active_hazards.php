@@ -1,4 +1,3 @@
-
 <?php
 
 // MAIN PURPOSE IS TO FETCH ALL THE APPROVED/ACTIVE HAZARDS 
@@ -16,7 +15,7 @@ $response = [
     'hazards' => []
 ];
 
-$query = "SELECT id, hazard_type, description, latitude, longitude, reporter, verification_status AS status, 
+$query = "SELECT id, hazard_type, description, latitude, longitude, reporter, status, 
                  DATE_FORMAT(reported_at, '%b %d, %Y | %h:%i %p') AS reported_at
           FROM hazard_reports
           WHERE verification_status = 'Approved'
@@ -34,7 +33,7 @@ if ($result) {
             'latitude' => floatval($row['latitude']),
             'longitude' => floatval($row['longitude']),
             'reporter' => $row['reporter'],
-            'status' => $row['status'],
+            'status' => $row['status'], 
             'reported_at' => $row['reported_at']
         ];
     }

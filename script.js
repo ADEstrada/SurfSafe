@@ -120,12 +120,26 @@ function updateForecastCards(marineDaily, weatherDaily) {
 }
 
 // SURF WIND CONDITION
+// INAYOS NA SURF CONDITION INDEX LOOKUP
 function updateSurfCondition(hourlyData) {
     const targetEl = document.getElementById('surf-condition');
     if (!targetEl) return;
 
-    const wave = hourlyData.wave_height[0];
-    const wind = hourlyData.wind_speed_10m[0];
+    const now = new Date();
+    
+    // Itinama ang index alignment para sa kasalukuyang oras ng kasalukuyang araw
+    const currentIndex = hourlyData.time.findIndex(t => {
+        const d = new Date(t);
+        return d.getDate() === now.getDate() && 
+               d.getMonth() === now.getMonth() && 
+               d.getFullYear() === now.getFullYear() && 
+               d.getHours() === now.getHours();
+    });
+
+    const indexToUse = currentIndex !== -1 ? currentIndex : 0;
+
+    const wave = hourlyData.wave_height[indexToUse];
+    const wind = hourlyData.wind_speed_10m[indexToUse];
 
     let condition = "POOR";
 
@@ -136,6 +150,14 @@ function updateSurfCondition(hourlyData) {
     }
 
     targetEl.innerText = condition;
+
+    if (condition === "GOOD") {
+        targetEl.style.color = "#198754"; 
+    } else if (condition === "FAIR") {
+        targetEl.style.color = "#ffc107"; 
+    } else {
+        targetEl.style.color = "#dc3545"; 
+    }
 }
 
 // HOURLY WAVE HEIGHT GRAPH - marine_data.html 
@@ -213,16 +235,44 @@ async function fetchMarineData() {
         console.log("WIND ARRAY:", marineData.daily.wind_speed_10m_max);
         console.log("Weather Hourly:", weatherData.hourly);
 
+
+        fetch('backend/check_weather_and_cancel.php')
+            .then(res => res.json())
+            .then(autoResult => {
+                if (autoResult.success && autoResult.cancelled_count > 0) {
+                    console.log(`SurfSafe Automation: ${autoResult.cancelled_count} booking slots automatically cancelled due to wave height warnings.`);
+                    
+                    if (typeof renderLiveTouristBookings === 'function') renderLiveTouristBookings();
+                    if (typeof renderBookings === 'function') renderBookings();
+                } else {
+                    console.log("SurfSafe Automation: " + autoResult.message);
+                }
+            })
+            .catch(err => console.warn("Background automation safety cycle deferred: ", err));
+
     } catch (error) {
         console.error("Architect Error: API could not be reached.", error);
     }
 }
 
-// WAVE CHART HOURLY DATA
+// INAYOS NA HOURLY CHART RENDERING (Kasalukuyang 24 Oras mula ngayon)
 function updateWaveChart(hourlyData) {
     if (!myWaveChart || !hourlyData) return;
 
-    const labels = hourlyData.time.slice(0, 24).map(t => {
+    const now = new Date();
+    
+    // Hinahanap ang index ng kasalukuyang oras para doon magsimula ang 24-hour graph block
+    const startIndex = hourlyData.time.findIndex(t => {
+        const d = new Date(t);
+        return d.getDate() === now.getDate() && 
+               d.getMonth() === now.getMonth() && 
+               d.getHours() === now.getHours();
+    });
+
+    const indexToUse = startIndex !== -1 ? startIndex : 0;
+
+    // Imbis na laging slice(0, 24) na fixed sa madaling araw, mag-si-slice tayo mula sa kasalukuyang oras pataas para laging abante ang graph
+    const labels = hourlyData.time.slice(indexToUse, indexToUse + 24).map(t => {
         const date = new Date(t);
         return date.toLocaleTimeString([], {
            hour: 'numeric',
@@ -231,7 +281,7 @@ function updateWaveChart(hourlyData) {
     });
 
     myWaveChart.data.labels = labels;
-    myWaveChart.data.datasets[0].data = hourlyData.wave_height.slice(0, 24);
+    myWaveChart.data.datasets[0].data = hourlyData.wave_height.slice(indexToUse, indexToUse + 24);
     myWaveChart.update();
 }
 
@@ -278,28 +328,58 @@ function updateTideInfo(tideData) {
 
 // BEST SURFING WINDOW
 function calculateBestSurfWindow(hourlyData) {
-    if (!hourlyData) return;
+    if (!hourlyData || !hourlyData.time || !hourlyData.wave_height) return;
 
     const targetEl = document.getElementById('best-time-window');
     if (!targetEl) return;
 
-    let bestIndex = 0;
+    let bestIndex = -1;
     let bestScore = -Infinity;
 
-    for (let i = 0; i < hourlyData.wave_height.length; i++) {
+    const now = new Date();
+    const todayDateStr = now.toDateString(); 
+
+    for (let i = 0; i < hourlyData.time.length; i++) {
+        const entryTime = new Date(hourlyData.time[i]);
+        
+        if (entryTime.toDateString() !== todayDateStr || entryTime < now) {
+            continue;
+        }
+
+        if (entryTime.getHours() >= 19) {
+            continue;
+        }
+
         const wave = hourlyData.wave_height[i];
         const wind = hourlyData.wind_speed_10m[i];
-        const score = wave - (wind * 0.1);
+        const period = hourlyData.wave_period ? hourlyData.wave_period[i] : 8;
 
-        if (score > bestScore) {
-            bestScore = score;
+        if (wave === undefined || wind === undefined) continue;
+
+        const surfScore = (wave * 3) + (period * 1.5) - (wind * 0.2);
+
+        if (surfScore > bestScore) {
+            bestScore = surfScore;
             bestIndex = i;
         }
     }
 
-    const bestTime = new Date(hourlyData.time[bestIndex]).getHours() + ":00";
-    targetEl.innerText = bestTime;
+    if (bestIndex === -1) {
+        targetEl.innerText = "Closed (Check Tomorrow)";
+        return;
+    }
+
+    const bestTimeDate = new Date(hourlyData.time[bestIndex]);
+    const formattedTime = bestTimeDate.toLocaleTimeString([], {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+    });
+
+    targetEl.innerText = formattedTime;
 }
+
+let myTideChart;
 
 // TIDE CHART - marine_data.html 
 function setupTideChart() {
@@ -377,7 +457,7 @@ async function fetchTideData() {
 
             // CHANGE - JUST MESSAGE
             headers: {
-                'Authorization': 'df81498c-5134-11f1-b37b-0242ac120004-df8149f0-5134-11f1-b37b-0242ac120004'
+                'Authorization': '23a98d10-446d-11f1-be04-0242ac120004-23a98eaa-446d-11f1-be04-0242ac120004'
             }
         });
 
@@ -455,9 +535,13 @@ function updateTideSummary() {
 // BOTTOM WEATHER DETAILS
 function updateWeatherDetails(weatherHourly, marineHourly) {
     const now = new Date();
+    
     const currentIndex = weatherHourly.time.findIndex(t => {
-    const d = new Date(t);
-        return d.getHours() === now.getHours() && d.getDate() === now.getDate();
+        const d = new Date(t);
+        return d.getDate() === now.getDate() && 
+               d.getMonth() === now.getMonth() && 
+               d.getFullYear() === now.getFullYear() && 
+               d.getHours() === now.getHours();
     });
 
     if (currentIndex === -1) return;
@@ -541,9 +625,18 @@ function renderReports() {
             const reportsData = data.hazards;
             
             container.innerHTML = reportsData.map(report => {
-                const isDangerous = report.status.toLowerCase() === 'dangerous';
-                const accentColor = isDangerous ? '#ff311f' : '#ffc107';
-                const badgeClass = isDangerous ? 'bg-danger' : 'bg-warning text-dark';
+                const currentStatus = report.status ? report.status.toLowerCase() : 'safe';
+                
+                let accentColor = '#198754';
+                let badgeClass = 'bg-success text-white';
+                
+                if (currentStatus === 'dangerous') {
+                    accentColor = '#ff311f'; 
+                    badgeClass = 'bg-danger text-white';
+                } else if (currentStatus === 'warning') {
+                    accentColor = '#ffc107'; 
+                    badgeClass = 'bg-warning text-dark';
+                }
 
                 return `
                     <div class="report-entry shadow-sm">
@@ -553,7 +646,7 @@ function renderReports() {
                                 
                                 <div class="col-md-8 pe-3">
                                     <span class="badge rounded-pill status-badge ${badgeClass} d-inline-block">
-                                        ${report.status.toUpperCase()}
+                                        ${currentStatus.toUpperCase()}
                                     </span>
                                     <p class="entry-description">${report.description}</p>
                                     <div class="location-text">
@@ -691,15 +784,15 @@ function showDetails(id) {
         .then(res => res.json())
         .then(data => {
             if(!data.success) return;
-            const booking = data.bookings.find(b => b.id === id);
+            const booking = data.bookings.find(b => b.id === id); // string/number match validation layer
             
-    if (booking) {
+            if (booking) {
                 const bookingsModalWrapper = document.querySelector('#detailsModal .modal-dialog');
                 if (bookingsModalWrapper) {
                     bookingsModalWrapper.classList.add('modal-lg');
                 }
 
-        document.getElementById('detail-name').innerText = booking.tourist_name;
+                document.getElementById('detail-name').innerText = booking.tourist_name;
                 document.getElementById('detail-email').innerText = booking.email || "No Email Provided";
                 
                 const liveDate = booking.date_display || "No Date Assigned";
@@ -711,20 +804,25 @@ function showDetails(id) {
                 }
                 document.getElementById('detail-location').innerText = booking.location || "Not Specified";
 
-        const btnContainer = document.getElementById('complete-btn-container');
-                if (booking.status.toLowerCase() === 'upcoming') {
-            btnContainer.innerHTML = `
-                <button class="btn btn-success w-100 rounded-pill" onclick="completeBooking('${booking.id}')">
-                    <i class="bi bi-check-circle me-2"></i>Mark as Completed
-                </button>
-            `;
-        } else {
-            btnContainer.innerHTML = '';
-        }
+                const notesElement = document.getElementById('detail-notes');
+                if (notesElement) {
+                    notesElement.innerText = booking.notes || "No structural requests specified.";
+                }
 
-        const detailsModal = new bootstrap.Modal(document.getElementById('detailsModal'));
-        detailsModal.show();
-    }
+                const btnContainer = document.getElementById('complete-btn-container');
+                if (booking.status.toLowerCase() === 'upcoming') {
+                    btnContainer.innerHTML = `
+                        <button class="btn btn-success w-100 rounded-pill" onclick="completeBooking('${booking.id}')">
+                            <i class="bi bi-check-circle me-2"></i>Mark as Completed
+                        </button>
+                    `;
+                } else {
+                    btnContainer.innerHTML = '';
+                }
+
+                const detailsModal = new bootstrap.Modal(document.getElementById('detailsModal'));
+                detailsModal.show();
+            }
         })
         .catch(error => console.error("Error loading modal data framework:", error));
 }
@@ -733,12 +831,47 @@ document.addEventListener("DOMContentLoaded", () => {
     renderBookings();
 });
 
+// FOR COMPLETE BOOKING
 function completeBooking(id) {
-    alert("Lesson marked as completed!");
-        const modalElement = document.getElementById('detailsModal');
-        const modalInstance = bootstrap.Modal.getInstance(modalElement);
-    if(modalInstance) modalInstance.hide();
-        renderBookings();
+    if (!confirm("Are you sure you want to mark this surf lesson as completed?")) {
+        return;
+    }
+
+    const payload = new FormData();
+    payload.append('booking_id', id);
+
+    fetch('backend/complete_booking.php', {
+        method: 'POST',
+        body: payload
+    })
+    .then(res => {
+        if (!res.ok) throw new Error("HTTP Status validation breakdown: " + res.status);
+        return res.json();
+    })
+    .then(result => {
+        if (result.success) {
+            alert(result.message);
+            
+            const modalElement = document.getElementById('detailsModal');
+            if (modalElement) {
+                const modalInstance = bootstrap.Modal.getInstance(modalElement);
+                if (modalInstance) modalInstance.hide();
+            }
+            
+            if (typeof renderBookings === 'function') {
+                renderBookings(); 
+            }
+            if (typeof renderLiveTouristBookings === 'function') {
+                renderLiveTouristBookings(); 
+            }
+        } else {
+            alert("Process Failure: " + result.message);
+        }
+    })
+    .catch(error => {
+        console.error("Error executing system booking lifecycle completion update:", error);
+        alert("Network processing error. Verify connection layout framework.");
+    });
 }
 
 // TRAINERS LIST - trainer.php
@@ -1388,73 +1521,104 @@ function renderMyReports() {
     const container = document.getElementById('my-reports-list');
     if (!container) return;
 
-    if (!myReportsData || myReportsData.length === 0) {
-        container.innerHTML = `
-            <div class="text-center py-5 border rounded bg-light">
-                <i class="bi bi-clipboard-x text-muted" style="font-size: 2.5rem;"></i>
-                <p class="text-muted mt-2">No reports submitted yet.</p>
-            </div>`;
-        return;
-    }
+    fetch('backend/get_my_reports.php')
+        .then(res => res.json())
+        .then(data => {
+            if (!data.success || !data.reports || data.reports.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-5 border rounded bg-light">
+                        <i class="bi bi-clipboard-x text-muted" style="font-size: 2.5rem;"></i>
+                        <p class="text-muted mt-2">No reports submitted yet.</p>
+                    </div>`;
+                return;
+            }
 
-    container.innerHTML = myReportsData.map(report => {
-        const isApproved = report.verification_status === 'Approved';
-        const badgeClass = isApproved ? 'bg-success' : 'bg-warning text-dark';
+            const myReportsData = data.reports;
 
-        return `
-            <div class="report-item p-3 mb-3 border rounded shadow-sm bg-white">
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                    <div>
-                        <span class="badge ${badgeClass} rounded-pill px-3 py-1 mb-2" style="font-size: 0.7rem;">
-                            ${report.verification_status.toUpperCase()}
-                        </span>
-                        <h6 class="fw-bold mb-1">${report.hazard_type}</h6>
+            container.innerHTML = myReportsData.map(report => {
+                const verifyStatus = report.verification_status ? report.verification_status.toLowerCase() : 'pending';
+                const hazardStatus = report.status ? report.status.toLowerCase() : 'safe';
+                
+                // 1. Logic para sa Verification Status Badge
+                let verifyBadgeClass = 'bg-warning text-dark'; // Pending
+                if (verifyStatus === 'approved') verifyBadgeClass = 'bg-success text-white';
+                if (verifyStatus === 'rejected') verifyBadgeClass = 'bg-danger text-white';
+                if (verifyStatus === 'resolved') verifyBadgeClass = 'bg-secondary text-white';
+
+                // 2. Logic para sa Hazard Severity Status Badge (Dangerous/Warning/Safe)
+                let hazardBadgeHTML = '';
+                if (verifyStatus === 'approved' || verifyStatus === 'resolved') {
+                    let hazardClass = 'bg-success text-white'; // Safe
+                    if (hazardStatus === 'dangerous') hazardClass = 'bg-danger text-white';
+                    if (hazardStatus === 'warning') hazardClass = 'bg-warning text-dark';
+                    
+                    // Gagawa tayo ng pangalawang badge sa tabi ng una
+                    hazardBadgeHTML = `
+                        <span class="badge ${hazardClass} rounded-pill px-3 py-1 mb-2 ms-1" style="font-size: 0.7rem; letter-spacing: 0.5px;">
+                            ${hazardStatus.toUpperCase()}
+                        </span>`;
+                }
+
+                return `
+                    <div class="report-item p-3 mb-3 border rounded shadow-sm bg-white" id="my-report-card-${report.id}">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <span class="badge ${verifyBadgeClass} rounded-pill px-3 py-1 mb-2" style="font-size: 0.7rem; letter-spacing: 0.5px;">
+                                    ${verifyStatus.toUpperCase()}
+                                </span>
+                                ${hazardBadgeHTML}
+                                
+                                <h6 class="fw-bold mb-1 mt-1">${report.hazard_type}</h6>
+                            </div>
+                            <small class="text-muted" style="font-size: 0.75rem;">${report.reported_at}</small>
+                        </div>
+
+                        <p class="text-muted mb-3 small">${report.description}</p>
+
+                        <div class="d-flex align-items-center justify-content-between border-top pt-2 mt-2">
+                            <div class="small text-muted">
+                                <i class="bi bi-geo-alt-fill text-danger me-1"></i>
+                                ${report.latitude}, ${report.longitude}
+                            </div>
+                            <button class="btn btn-sm text-danger p-0" onclick="deleteReport('${report.id}')">
+                                <i class="bi bi-trash3"></i>
+                            </button>
+                        </div>
                     </div>
-                    <small class="text-muted" style="font-size: 0.75rem;">${report.reported_at}</small>
-                </div>
-
-                <p class="text-muted mb-3 small">${report.description}</p>
-
-                <div class="d-flex align-items-center justify-content-between border-top pt-2 mt-2">
-                    <div class="small text-muted">
-                        <i class="bi bi-geo-alt-fill text-danger me-1"></i>
-                        ${report.latitude}, ${report.longitude}
-                    </div>
-                    <button class="btn btn-sm text-danger p-0" onclick="deleteReport('${report.id}')">
-                        <i class="bi bi-trash3"></i>
-                    </button>
-                </div>
-            </div>
-        `;
-    }).join('');
+                `;
+            }).join('');
+        })
+        .catch(error => {
+            console.error("Error structural fetching personal database hazard logging layers:", error);
+            container.innerHTML = `<div class="text-danger text-center small py-3">Error fetching personal safety logs matrix.</div>`;
+        });
 }
 
 // UPDATED THIS PART TO RENDER REAL REPORTS FROM THE DATABASE - LYZETTE
 document.addEventListener('DOMContentLoaded', () => {
     loadUserProfileData();
 
-    if (document.getElementById('forecastContainer') || document.getElementById('waveChart')) {
+    // INAYOS DITO: Binalot natin ang Marine Data sa Page Guard check para tumakbo lang kung nasaan ang mga Charts/Forecasts
+    if (document.getElementById('forecastContainer') || document.getElementById('waveChart') || document.getElementById('tideChart')) {
         generateForecastCards();
         displayLiveDate();
         if (document.getElementById('waveChart')) setupWaveChart();
         if (document.getElementById('tideChart')) setupTideChart();
+        fetchMarineData(); // Ligtas na itong patakbuhin dito boi
     }
 
-     fetchMarineData();
-
-     if (typeof L !== 'undefined') {
-        initHomepageMapPreview();
-        initLiveHazardMap();
+    if (typeof L !== 'undefined') {
+        if (document.getElementById('hazard-map-api')) initHomepageMapPreview();
+        if (document.getElementById('map')) initLiveHazardMap();
     } else {
         console.warn("Leaflet Map framework integration is still loading... Retrying in a short window.");
         setTimeout(() => {
             if (typeof L !== 'undefined') {
-                initHomepageMapPreview();
-                initLiveHazardMap();
+                if (document.getElementById('hazard-map-api')) initHomepageMapPreview();
+                if (document.getElementById('map')) initLiveHazardMap();
             }
         }, 500);
     }
-
 
     const termsModal = document.getElementById('termsModal');
     if (termsModal) {
@@ -1476,7 +1640,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // TARGETS ALL COHORT TRAINER REDIRECTION BUTTONS ON THE HOMEPAGE - LYZETTE
     const gatekeeperButtons = document.querySelectorAll('.btn-gatekeeper');
-
     gatekeeperButtons.forEach(button => {
         button.addEventListener('click', function(e) {
             e.preventDefault();
@@ -1503,17 +1666,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (document.getElementById('reports-list')) renderReports();
     if (document.getElementById('upcoming-list')) renderBookings();
+    if (document.getElementById('my-reports-list')) renderMyReports();
+    if (document.getElementById('tourist-bookings-list')) renderLiveTouristBookings();
 
     const modalEl = document.getElementById('trainerModal');
     if (modalEl) {
         trainerModal = new bootstrap.Modal(modalEl);
     }
 
-    renderTrainers();
+    if (document.getElementById('trainers-list')) renderTrainers();
 
     if (document.getElementById('sideCardTitle')) {
         setupProfileEditorActions();
     }
+    
     const avatarInput = document.getElementById('inputAvatar');
     if (avatarInput) {
         avatarInput.addEventListener('change', function() {
@@ -1601,7 +1767,13 @@ function loadUserProfileData() {
             if (isViewingHomepage) {
                 const profileIsUncomplete = data.profile_completed == 0 || data.profile_completed === false;
 
-                if (profileIsUncomplete) {
+                if (profileIsUncomplete && data.role === 'Trainer') {
+                    const trainerSetupModal = document.getElementById('trainerProfileSetupModal');
+                    if (trainerSetupModal) {
+                        const trainerPopup = new bootstrap.Modal(trainerSetupModal);
+                        trainerPopup.show();
+                    }
+                } else if (profileIsUncomplete) {
                     const nudgeModalElement = document.getElementById('touristFirstTimeModal');
                     if (nudgeModalElement) {
                         const touristPopup = new bootstrap.Modal(nudgeModalElement);
@@ -1665,7 +1837,7 @@ function loadUserProfileData() {
 
             } else {
                 if (typeof renderLiveTouristBookings === 'function') renderLiveTouristBookings();
-                if (typeof renderLiveTouristReports === 'function') renderLiveTouristReports();
+                if (typeof renderMyReports === 'function') renderMyReports();
             }
         })
         .catch(error => {
@@ -1823,9 +1995,14 @@ function renderLiveTouristBookings() {
                                         <i class="bi bi-x-circle"></i> Cancel
                                     </button>
                                 ` : `
-                                    <span class="fw-bold small text-uppercase ${statusColor} pe-2" style="font-size: 0.85rem; letter-spacing: 0.8px;">
-                                        ${booking.status}
-                                    </span>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="fw-bold small text-uppercase ${statusColor} pe-2" style="font-size: 0.85rem; letter-spacing: 0.8px;">
+                                            ${booking.status}
+                                        </span>
+                                        <button class="btn btn-sm text-danger p-1" title="Delete from history" onclick="deleteTouristBooking('${booking.id}')">
+                                            <i class="bi bi-trash3-fill" style="font-size: 1.1rem;"></i>
+                                        </button>
+                                    </div>
                                 `}
                             </div>
 
@@ -1876,7 +2053,6 @@ function initHomepageMapPreview() {
     const previewEl = document.getElementById('hazard-map-api');
     if (!previewEl) return;
 
-    // Isara sa isang malinis na try-catch block para kung mag-error ang network layer, tuloy pa rin ang agos ng script
     try {
         const mapPreview = L.map('hazard-map-api', {
             zoomControl: false,
@@ -1902,10 +2078,10 @@ function initHomepageMapPreview() {
                 if (!res.ok) {
                     throw new Error("Server returned status " + res.status);
                 }
-                return res.text(); // Kunin muna bilang plain text para ma-verify kung valid JSON
+                return res.text();
             })
             .then(text => {
-                // Safety checkpoint para malaman kung html error code ang binalik ng PHP
+               
                 if (text.trim().startsWith('<')) {
                     console.error("Backend Error: 'get_active_hazards.php' outputted HTML error layout instead of clear JSON data.");
                     return;
@@ -1993,7 +2169,7 @@ function initLiveHazardMap() {
                         <div style="min-width:220px;">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <h6 class="fw-bold mb-0">${hazard.hazard_type}</h6>
-                                <span class="badge bg-${badgeColor}====">${hazard.status}</span>
+                                <span class="badge bg-${badgeColor}">${hazard.status}</span>
                             </div>
                             <p class="small text-muted mb-2">${hazard.description}</p>
                             <hr>
@@ -2011,4 +2187,56 @@ function initLiveHazardMap() {
     } catch (err) {
         console.error("Leaflet full-screen contextual map processing blocked:", err);
     }
+}
+
+// FOR DELETING REPORTS
+function deleteReport(id) {
+    if (!confirm("Are you sure you want to permanently delete this safety report from your log history?")) {
+        return;
+    }
+
+    fetch(`backend/delete_report.php?id=${id}`)
+    .then(res => {
+        if (!res.ok) throw new Error("HTTP validation breakdown.");
+        return res.json();
+    })
+    .then(result => {
+        if (result.success) {
+            alert(result.message);
+            if (typeof renderMyReports === 'function') renderMyReports();
+        } else {
+            alert("Error: " + result.message);
+        }
+    })
+    .catch(error => {
+        console.error("Error executing report deletion cycle:", error);
+    });
+}
+
+// FOR DELETING BOOKINGS
+function deleteTouristBooking(bookingId) {
+    if (!confirm("Are you sure you want to remove and clear this booking record from your logs? This cannot be undone.")) {
+        return;
+    }
+
+    const payload = new FormData();
+    payload.append('booking_id', bookingId);
+
+    fetch('backend/delete_tourist_booking.php', {
+        method: 'POST',
+        body: payload
+    })
+    .then(res => res.json())
+    .then(result => {
+        if (result.success) {
+            alert(result.message);
+            if (typeof renderLiveTouristBookings === 'function') renderLiveTouristBookings();
+        } else {
+            alert("Delete Operation Failure: " + result.message);
+        }
+    })
+    .catch(error => {
+        console.error("Error executing safe data destruction pipeline:", error);
+        alert("Network communication timeout framework error.");
+    });
 }

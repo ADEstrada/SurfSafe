@@ -1,4 +1,5 @@
 <?php
+
 session_start();
 ?>
 
@@ -38,7 +39,6 @@ session_start();
                     <nav class="nav-pages mx-auto">
                         <a href="index.php" class="active">Home</a>
                         <a href="marine_data.php">Marine Data</a>
-                        <a href="hazard_map.php">Hazard Map</a>
                         <a href="report.php">Report</a>
                         <a href="about.php">About</a>
 
@@ -151,9 +151,11 @@ session_start();
                         <p class="hazard-section-subtitle">Real-time visualization of Bagasbas beach safety status. From currents to jellyfish sightings, stay informed before you hit the water.</p>
                     </div>
 
-                    <div class="map-container">
-                        <div id="hazard-map-api" class="map-placeholder d-flex align-items-center justify-content-center">
-                                    <a href="hazard_map.php" class="btn-full-map">VIEW FULL MAP</a>
+                   <div class="map-container">
+                        <div id="hazard-map-api" class="map-placeholder"></div>
+
+                        <div class="map-overlay">
+                            <a href="report.php#hazard-map-section" class="btn-full-map">VIEW FULL MAP</a>
                         </div>
                     </div>
 
@@ -237,8 +239,7 @@ session_start();
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content border-0 shadow-lg text-center" style="border-radius: 24px; overflow: hidden;">
 
-                    <div class="p-4 bg-primary text-white position-relative">
-                        <div class="position-absolute top-0 start-0 w-100 h-100 opacity-10" style="background-image: radial-gradient(circle, #fff 10%, transparent 11%); background-size: 12px 12px;"></div>
+                    <div class="p-4 text-white" style="background-color: var(--surf-navy);">
                         <i class="bi bi-person-vcard fs-1 d-block mb-2 animate-bounce"></i>
                         <h4 class="fw-bold mb-0" style="letter-spacing: 0.5px;">Setup Your Tourist Profile!</h4>
                     </div>
@@ -257,7 +258,7 @@ session_start();
                             </div>
                         </div>
 
-                        <a href="profile.php" class="btn btn-primary w-100 py-2.5 fw-bold rounded-pill shadow-sm d-flex align-items-center justify-content-center gap-2" style="font-size: 0.95rem;">
+                        <a href="profile.php" class="btn w-100 py-2.5 fw-bold rounded-pill shadow-sm d-flex align-items-center justify-content-center gap-2" style="font-size: 0.95rem; background-color: var(--surf-navy); color: #fff;">
                             <i class="bi bi-pencil-square"></i> Set Up Profile Now
                         </a>
                     </div>
@@ -265,7 +266,37 @@ session_start();
             </div>
         </div>
 
-        </body>
+        <!-- POPUP SET PROFILE (TRAINER) -->
+        <div class="modal fade" id="trainerProfileSetupModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg text-center" style="border-radius: 24px; overflow: hidden;">
+
+                    <div class="p-4 text-white" style="background-color: var(--surf-navy);">
+                        <i class="bi bi-person-badge fs-1 d-block mb-2"></i>
+                        <h4 class="fw-bold mb-0" style="letter-spacing: 0.5px;">Complete Your Trainer Profile!</h4>
+                    </div>
+
+                    <div class="modal-body p-4 bg-white text-dark">
+                        <p class="fw-bold mb-2 text-dark" style="font-size: 1.1rem;">Welcome, Trainer!</p>
+                        <p class="text-muted small mb-4" style="line-height: 1.5;">
+                            Before the admin can assign you to shifts and make you visible to tourists for bookings, you need to complete your trainer profile first.
+                        </p>
+
+                        <div class="p-3 mb-4 rounded-3 d-flex align-items-start gap-2 text-start" style="background-color: #fff9e6; border-left: 4px solid #ffc107;">
+                            <i class="bi bi-exclamation-triangle-fill text-warning fs-5 mt-0.5"></i>
+                            <div class="small text-secondary">
+                                <strong class="text-dark d-block mb-0.5">Scheduling Disabled:</strong>
+                                You won't appear in the admin's trainer list or be available for shift assignments until your profile (photo, experience, specialization, and bio) is fully set up.
+                            </div>
+                        </div>
+
+                        <a href="profile.php" class="btn w-100 py-2.5 fw-bold rounded-pill shadow-sm d-flex align-items-center justify-content-center gap-2" style="font-size: 0.95rem; background-color: var(--surf-navy); color: #fff;">
+                            <i class="bi bi-pencil-square"></i> Set Up Profile Now
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
 
             <footer class="main-footer mt-5">
                 <div class="footer-top py-5">
@@ -302,6 +333,8 @@ session_start();
             </footer>
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
         <script src="script.js"></script>
 
+</body>
 </html>

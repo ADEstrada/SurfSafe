@@ -294,6 +294,42 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'Admin') {
                     </div>
                 </div>
 
+                <div class="row">
+                    </div>
+
+                <div class="row mt-5">
+                    <div class="col-12">
+                        <div class="card shadow-sm border-0 p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <div>
+                                    <h5 class="fw-bold mb-0">Published Active Hazards</h5>
+                                    <small class="text-muted">Manage currently visible hazards on the live map and public feeds.</small>
+                                </div>
+                            </div>
+                            
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Type</th>
+                                            <th>Description</th>
+                                            <th>Status Level</th>
+                                            <th>Reporter</th>
+                                            <th>Reported At</th>
+                                            <th class="text-center">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="admin-active-hazards-table-body">
+                                        <tr>
+                                            <td colspan="6" class="text-center text-muted small py-4">Loading active hazard database matrix...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </section>
 
         </main>

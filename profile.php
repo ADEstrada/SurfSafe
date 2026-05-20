@@ -5,9 +5,10 @@ if (!isset($_SESSION['user_id'])) {
     header("Location: login.html");
     exit();
 }
-$user_role = $_SESSION['role'];
-$first_name = $_SESSION['first_name'];
+
+$user_role = isset($_SESSION['role']) ? $_SESSION['role'] : 'Tourist'; 
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -27,7 +28,7 @@ $first_name = $_SESSION['first_name'];
         <div class="header-container">
             <img src="assets/logo.svg" alt="SurfSafe Logo" class="logo-icon">
 
-            <button class="navbar-toggler custom-hamburger" type="button" data-bs-toggle="collapse" data-bs-target="#surfNavbar">
+            <button class="navbar-toggler custom-hamburger collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#surfNavbar">
                 <div class="hamburger-lines">
                     <span class="line line1"></span>
                     <span class="line line2"></span>
@@ -39,15 +40,25 @@ $first_name = $_SESSION['first_name'];
                 <nav class="nav-pages mx-auto">
                     <a href="index.php">Home</a>
                     <a href="marine_data.php">Marine Data</a>
-                    <a href="hazard_map.php">Hazard Map</a>
                     <a href="report.php">Report</a>
                     <a href="about.php">About</a>
-                    <a href="trainers.php" id="nav-book-trainer" class="<?php echo (isset($_SESSION['role']) && $_SESSION['role'] === 'Admin') ? 'd-none' : ''; ?>">Trainers</a>
-                    <a href="my_bookings.php" id="nav-my-bookings" class="d-none">My Bookings</a>
+
+                    <?php if (isset($_SESSION['user_id'])): ?>
+                        <a href="trainers.php" id="nav-book-trainer">Trainers</a>
+                        
+                        <?php if ($_SESSION['role'] === 'Trainer'): ?>
+                            <a href="my_bookings.php" id="nav-my-bookings">My Bookings</a>
+                        <?php endif; ?>
+                    <?php endif; ?>
                 </nav>
 
                 <div class="auth-wrapper">
-                    <?php if (isset($_SESSION['user_id'])): ?>
+                    <?php if (!isset($_SESSION['user_id'])): ?>
+                        <div id="auth-controls" class="auth-buttons">
+                            <a href="login.html" class="btn-login">Login</a>
+                            <a href="signup.html" class="btn-signup">Sign Up</a>
+                        </div>
+                    <?php else: ?>
                         <div id="user-profile-section">
                             <div class="dropdown">
                                 <a href="#" class="profile-link d-flex align-items-center dropdown-toggle" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
@@ -61,13 +72,9 @@ $first_name = $_SESSION['first_name'];
                                 </ul>
                             </div>
                         </div>
-                    <?php else: ?>
-                        <div id="auth-controls" class="auth-buttons">
-                            <a href="login.html" class="btn-login">Login</a>
-                            <a href="signup.html" class="btn-signup">Sign Up</a>
-                        </div>
                     <?php endif; ?>
                 </div>
+
             </div>
         </div>
     </header>
@@ -75,7 +82,7 @@ $first_name = $_SESSION['first_name'];
     <div class="profile-container mt-4">
         <form id="profileForm" enctype="multipart/form-data">
 
-        <?php if ($user_role === 'Trainer'): ?>
+            <?php if ($user_role === 'Trainer'): ?>
                 <div class="profile-header-card" id="profile-header-section"> 
                     
                     <div class="profile-img-wrapper position-relative text-center d-inline-block" style="width: 150px; height: 150px; min-width: 150px; min-height: 150px; background-color: #f0f3f8; border-radius: 50%;">
@@ -97,100 +104,100 @@ $first_name = $_SESSION['first_name'];
                         </p>
                     </div>
                 </div>
-        <?php endif; ?>
+            <?php endif; ?>
 
-        <div class="profile-grid">
+            <div class="profile-grid">
+                
+                <div class="side-card">
+                    <h3 class="section-subtitle-profile" id="sideCardTitle">
+                        <?php echo ($user_role === 'Trainer') ? 'Trainer Details' : 'Tourist Account'; ?>
+                    </h3>
+                    
+                    <div class="info-row">
+                        <span class="info-label">Email Address</span>
+                        <span class="info-value display-field" id="trainerEmail">...</span>
+                        <input type="email" id="inputEmail" class="form-control edit-field d-none">
+                    </div>
+
+                    <div class="info-row">
+                        <span class="info-label">Password</span>
+                        <span class="info-value display-field">********</span>
+                        <input type="password" id="inputPassword" class="form-control edit-field d-none" placeholder="New password">
+                    </div>
+
+                    <div class="info-row">
+                        <span class="info-label">Phone Number</span>
+                        <span class="info-value display-field" id="trainerPhone">...</span>
+                        <input type="text" id="inputPhone" class="form-control edit-field d-none">
+                    </div>
+
+                    <div class="info-row <?php echo ($user_role === 'Trainer') ? '' : 'd-none'; ?>" id="experience-section">
+                        <span class="info-label">Experience Level</span>
+                        <span class="info-value display-field" id="trainerExp">...</span>
+                        <input type="text" id="inputExp" class="form-control edit-field d-none">
+                    </div>
+
+                    <div class="mt-4 d-grid gap-2">
+                        <button id="editToggleBtn" class="btn btn-outline-primary w-100" type="button">
+                            <?php echo ($user_role === 'Trainer') ? 'Edit Profile' : 'Update Info'; ?>
+                        </button>
+                        <button id="saveBtn" class="btn btn-primary w-100 d-none" type="button">Save Changes</button>
+                    </div>
+                </div>
+
+                <div class="profile-main-content">
+                    
+                    <?php if ($user_role === 'Trainer'): ?>
+                        <div class="main-profile-card" id="trainer-info-card">
+                            <h3 class="section-subtitle-profile">Trainer Information</h3>
             
-            <div class="side-card">
-                <h3 class="section-subtitle-profile" id="sideCardTitle">
-                    <?php echo ($user_role === 'Trainer') ? 'Trainer Details' : 'Tourist Account'; ?>
-                </h3>
-                
-                <div class="info-row">
-                    <span class="info-label">Email Address</span>
-                    <span class="info-value display-field" id="trainerEmail">...</span>
-                    <input type="email" id="inputEmail" class="form-control edit-field d-none">
-                </div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Specialization</label>
+                                    <input type="text" id="inputSpecialization" class="form-control main-input" disabled>
+                                </div>
 
-                <div class="info-row">
-                    <span class="info-label">Password</span>
-                    <span class="info-value display-field">********</span>
-                    <input type="password" id="inputPassword" class="form-control edit-field d-none" placeholder="New password">
-                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Certifications</label>
+                                    <input type="text" id="inputCertifications" class="form-control main-input" disabled>
+                                </div>
+                            </div>
 
-                <div class="info-row">
-                    <span class="info-label">Phone Number</span>
-                    <span class="info-value display-field" id="trainerPhone">...</span>
-                    <input type="text" id="inputPhone" class="form-control edit-field d-none">
-                </div>
+                            <div class="mt-3">
+                                <label class="form-label">Bio / About Me</label>
+                                <textarea id="inputBio" class="form-control main-input" rows="4" disabled></textarea>
+                            </div>
 
-                <div class="info-row <?php echo ($user_role === 'Trainer') ? '' : 'd-none'; ?>" id="experience-section">
-                    <span class="info-label">Experience Level</span>
-                    <span class="info-value display-field" id="trainerExp">...</span>
-                    <input type="text" id="inputExp" class="form-control edit-field d-none">
-                </div>
-
-                <div class="mt-4 d-grid gap-2">
-                    <button id="editToggleBtn" class="btn btn-outline-primary w-100" type="button">
-                        <?php echo ($user_role === 'Trainer') ? 'Edit Profile' : 'Update Info'; ?>
-                    </button>
-                    <button id="saveBtn" class="btn btn-primary w-100 d-none" type="button">Save Changes</button>
-                </div>
-            </div>
-
-            <div class="profile-main-content">
-                
-                <?php if ($user_role === 'Trainer'): ?>
-                <div class="main-profile-card" id="trainer-info-card">
-                    <h3 class="section-subtitle-profile">Trainer Information</h3>
-    
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Specialization</label>
-                            <input type="text" id="inputSpecialization" class="form-control main-input" disabled>
+                            <div class="section-subtitle-profile mt-4">Documents Uploaded</div>
+                            <div id="trainer-documents-container" class="d-flex flex-column gap-2">
+                                <p class="text-muted small mb-0">Loading registration documents...</p>
+                            </div>
                         </div>
+                    <?php endif; ?>
 
-                        <div class="col-md-6">
-                            <label class="form-label">Certifications</label>
-                            <input type="text" id="inputCertifications" class="form-control main-input" disabled>
+                    <?php if ($user_role === 'Tourist'): ?>
+                        <div class="main-profile-card" id="tourist-activity-card">
+                            <div class="activity-section">
+                                <h3 class="section-subtitle-profile"><i class="bi bi-calendar-check me-2"></i>Recent Bookings</h3>
+                                <div id="tourist-bookings-list" class="mt-3">
+                                    <p class="text-muted small">Manage your upcoming surf sessions and trainer schedules.</p>
+                                </div>
+                            </div>
+
+                            <hr class="my-4">
+
+                            <div class="activity-section">
+                                <h3 class="section-subtitle-profile"><i class="bi bi-flag me-2"></i>My Reports</h3>
+                                <div id="my-reports-list" class="mt-3">
+                                    <p class="text-muted small">View the history of safety reports you have submitted.</p>
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                    <?php endif; ?>
 
-                    <div class="mt-3">
-                        <label class="form-label">Bio / About Me</label>
-                        <textarea id="inputBio" class="form-control main-input" rows="4" disabled></textarea>
-                    </div>
-
-                    <div class="section-subtitle-profile mt-4">Documents Uploaded</div>
-                        <div id="trainer-documents-container" class="d-flex flex-column gap-2">
-                            <p class="text-muted small mb-0">Loading registration documents...</p>
-                        </div>
-                    </div>
-                <?php endif; ?>
-
-                <?php if ($user_role === 'Tourist'): ?>
-                <div class="main-profile-card" id="tourist-activity-card">
-                    <div class="activity-section">
-                        <h3 class="section-subtitle-profile"><i class="bi bi-calendar-check me-2"></i>Recent Bookings</h3>
-                        <div id="tourist-bookings-list" class="mt-3">
-                            <p class="text-muted small">Manage your upcoming surf sessions and trainer schedules.</p>
-                        </div>
-                    </div>
-
-                    <hr class="my-4">
-
-                    <div class="activity-section">
-                        <h3 class="section-subtitle-profile"><i class="bi bi-flag me-2"></i>My Reports</h3>
-                        <div id="my-reports-list" class="mt-3">
-                            <p class="text-muted small">View the history of safety reports you have submitted.</p>
-                        </div>
-                    </div>
-                </div>
-                <?php endif; ?>
-
+                </div> 
             </div> 
-        </div> 
-    </div>
+        </form> </div>
 
     <footer class="main-footer mt-5">
         <div class="footer-top py-5">
@@ -228,8 +235,6 @@ $first_name = $_SESSION['first_name'];
 
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- BAT MAY NUMBER -->
     <script src="script.js?v=102"></script>
 </body>
 </html>

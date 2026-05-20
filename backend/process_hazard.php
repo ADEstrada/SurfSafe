@@ -1,4 +1,3 @@
-
 <?php
 session_start();
 include '../includes/db.php';
@@ -15,16 +14,21 @@ if (isset($_SESSION['role']) && $_SESSION['role'] === 'Admin') {
     $action    = $_GET['action']; // APPROVE/REJECT
 
     if ($action === 'approve') {
-        // IF APPROVED, STATUS CHANGES TO APPROVED
-        $update_query = "UPDATE hazard_reports SET verification_status = 'Approved' WHERE id = $report_id";
+        
+        $hazard_status = isset($_GET['status']) ? mysqli_real_escape_string($conn, $_GET['status']) : 'Safe';
+        
+        $update_query = "UPDATE hazard_reports 
+                         SET verification_status = 'Approved', status = '$hazard_status' 
+                         WHERE id = $report_id";
     } else {
-        // IF REJECTED, STATUS CHANGED TOO
-        $update_query = "UPDATE hazard_reports SET verification_status = 'Rejected' WHERE id = $report_id";
+        $update_query = "UPDATE hazard_reports 
+                         SET verification_status = 'Rejected', status = 'Rejected' 
+                         WHERE id = $report_id";
     }
 
     if (mysqli_query($conn, $update_query)) {
         $response['success'] = true;
-        $response['message'] = ($action === 'approve') ? "Hazard approved and successfully published!" : "Hazard report rejected.";
+        $response['message'] = ($action === 'approve') ? "Hazard approved and successfully published as $hazard_status!" : "Hazard report rejected.";
     } else {
         $response['message'] = "Database query update crash: " . mysqli_error($conn);
     }

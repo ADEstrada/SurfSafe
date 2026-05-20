@@ -3,21 +3,18 @@ session_start();
 ?>
 
 <!DOCTYPE html>
-
 <html lang="en">
 
     <head>
-
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-        <title>SurfSafe - Report</title>
+        <title>SurfSafe - Report & Hazard Map</title>
 
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
         <link rel="stylesheet" href="css/style.css">
-
     </head>
 
     <body>
@@ -38,7 +35,6 @@ session_start();
                     <nav class="nav-pages mx-auto">
                         <a href="index.php">Home</a>
                         <a href="marine_data.php">Marine Data</a>
-                        <a href="hazard_map.php">Hazard Map</a>
                         <a href="report.php" class="active">Report</a>
                         <a href="about.php">About</a>
 
@@ -73,23 +69,37 @@ session_start();
                             </div>
                         <?php endif; ?>
                     </div>
-
                 </div>
             </div>
         </header>
 
-        <main class>
+        <main>
 
-           <section class="report-list-container py-5">
+            <!-- CURRENT LIST OF REPORTS SECTION -->
+            <section class="report-list-container py-5">
                 <div class="container">
                     <h2 class="section-title-navy">CURRENT LIST OF REPORTS</h2>
                     <div id="reports-list" class="reports-feed"></div>
                 </div>
             </section>
 
+            <!-- HAZARD MAP MONITORING SECTION  -->
+            <section id="hazard-map-section" class="hazard-map-page py-4 bg-white">
+                <div class="container">
+                    <div class="text-center mb-4">
+                        <h2 class="fw-bold text-uppercase section-title-navy">HAZARD MAP MONITORING</h2>
+                        <p class="text-muted">Live approved hazard reports around Bagasbas Beach.</p>
+                    </div>
+                    
+                    <div class="hazard-map-container shadow-lg rounded-4 overflow-hidden">
+                        <div id="map" style="height: 500px;"></div> 
+                    </div>
+                </div>
+            </section>
+
+            <!-- REPORT CTA BANNER SECTION -->
             <section class="report-cta-banner position-relative">
                 <div class="container text-center">
-
                     <div class="report-badge-wrapper">
                         <span class="report-pill">SEE SOMETHING? SAY SOMETHING!</span>
                     </div>
@@ -106,77 +116,76 @@ session_start();
                 </div>
             </section>
 
+            <!-- EMERGENCY CONTACTS & SAFETY TIPS SECTION -->
             <section class="emergency-safety-section py-5">
-            <div class="container">
-                <div class="row g-4">
-                    <div class="col-md-5">
-                        <div class="emergency-card h-100 p-4 rounded-4 shadow-sm text-white" style="background-color: #001f54;">
-                            <div class="d-flex justify-content-between align-items-center mb-4">
-                                <h4 class="fw-bold mb-0">EMERGENCY CONTACTS</h4>
-                               
+                <div class="container">
+                    <div class="row g-4">
+                        <div class="col-md-5">
+                            <div class="emergency-card h-100 p-4 rounded-4 shadow-sm text-white" style="background-color: #001f54;">
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                    <h4 class="fw-bold mb-0">EMERGENCY CONTACTS</h4>
+                                </div>
+                                <ul class="list-unstyled mb-0">
+                                    <li class="mb-3 d-flex align-items-start">
+                                        <span class="me-2">•</span>
+                                        <div><strong>National Emergency:</strong> 911 / 117</div>
+                                    </li>
+                                    <li class="mb-3 d-flex align-items-start">
+                                        <span class="me-2">•</span>
+                                        <div><strong>Philippine Coast Guard (Daet):</strong> 0912-345-6789</div>
+                                    </li>
+                                    <li class="mb-3 d-flex align-items-start">
+                                        <span class="me-2">•</span>
+                                        <div><strong>MDRRMO Daet:</strong> (054) 440-1234</div>
+                                    </li>
+                                    <li class="mb-3 d-flex align-items-start">
+                                        <span class="me-2">•</span>
+                                        <div><strong>Bagasbas Lifeguard Station:</strong> Tower 1 - Main Beach</div>
+                                    </li>
+                                    <li class="mb-0 d-flex align-items-start">
+                                        <span class="me-2">•</span>
+                                        <div><strong>Provincial Hospital:</strong> (054) 885-5678</div>
+                                    </li>
+                                </ul>
                             </div>
-                            <ul class="list-unstyled mb-0">
-                                <li class="mb-3 d-flex align-items-start">
-                                    <span class="me-2">•</span>
-                                    <div><strong>National Emergency:</strong> 911 / 117</div>
-                                </li>
-                                <li class="mb-3 d-flex align-items-start">
-                                    <span class="me-2">•</span>
-                                    <div><strong>Philippine Coast Guard (Daet):</strong> 0912-345-6789</div>
-                                </li>
-                                <li class="mb-3 d-flex align-items-start">
-                                    <span class="me-2">•</span>
-                                    <div><strong>MDRRMO Daet:</strong> (054) 440-1234</div>
-                                </li>
-                                <li class="mb-3 d-flex align-items-start">
-                                    <span class="me-2">•</span>
-                                    <div><strong>Bagasbas Lifeguard Station:</strong> Tower 1 - Main Beach</div>
-                                </li>
-                                <li class="mb-0 d-flex align-items-start">
-                                    <span class="me-2">•</span>
-                                    <div><strong>Provincial Hospital:</strong> (054) 885-5678</div>
-                                </li>
-                            </ul>
                         </div>
-                    </div>
 
-                    <div class="col-md-7">
-                        <div class="safety-card h-100 p-4 rounded-4 shadow-sm text-white" style="background-color: #8fb1d1;">
-                            <div class="d-flex justify-content-between align-items-center mb-4">
-                                <h4 class="fw-bold mb-0 text-uppercase">Safety Tips</h4>
-                                
+                        <div class="col-md-7">
+                            <div class="safety-card h-100 p-4 rounded-4 shadow-sm text-white" style="background-color: #8fb1d1;">
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                    <h4 class="fw-bold mb-0 text-uppercase">Safety Tips</h4>
+                                </div>
+                                <ul class="list-unstyled mb-0">
+                                    <li class="mb-3 d-flex align-items-start">
+                                        <span class="me-2">•</span>
+                                        <div><strong>Flag Awareness:</strong> Always check the color of the flags at the lifeguard towers before entering the water.</div>
+                                    </li>
+                                    <li class="mb-3 d-flex align-items-start">
+                                        <span class="me-2">•</span>
+                                        <div><strong>Rip Current Strategy:</strong> If caught in an offshore current, do not swim against it. Swim parallel to the shore until you are out of the current.</div>
+                                    </li>
+                                    <li class="mb-3 d-flex align-items-start">
+                                        <span class="me-2">•</span>
+                                        <div><strong>Buddy System:</strong> Never surf or swim alone. Always have a companion watching out for you.</div>
+                                    </li>
+                                    <li class="mb-3 d-flex align-items-start">
+                                        <span class="me-2">•</span>
+                                        <div><strong>Stay Hydrated:</strong> The tropical sun can be intense; drink plenty of water and use reef-safe sunscreen.</div>
+                                    </li>
+                                    <li class="mb-0 d-flex align-items-start">
+                                        <span class="me-2">•</span>
+                                        <div><strong>Respect the Locals:</strong> Follow the surfing etiquette and respect the local community and marine life.</div>
+                                    </li>
+                                </ul>
                             </div>
-                            <ul class="list-unstyled mb-0">
-                                <li class="mb-3 d-flex align-items-start">
-                                    <span class="me-2">•</span>
-                                    <div><strong>Flag Awareness:</strong> Always check the color of the flags at the lifeguard towers before entering the water.</div>
-                                </li>
-                                <li class="mb-3 d-flex align-items-start">
-                                    <span class="me-2">•</span>
-                                    <div><strong>Rip Current Strategy:</strong> If caught in an offshore current, do not swim against it. Swim parallel to the shore until you are out of the current.</div>
-                                </li>
-                                <li class="mb-3 d-flex align-items-start">
-                                    <span class="me-2">•</span>
-                                    <div><strong>Buddy System:</strong> Never surf or swim alone. Always have a companion watching out for you.</div>
-                                </li>
-                                <li class="mb-3 d-flex align-items-start">
-                                    <span class="me-2">•</span>
-                                    <div><strong>Stay Hydrated:</strong> The tropical sun can be intense; drink plenty of water and use reef-safe sunscreen.</div>
-                                </li>
-                                <li class="mb-0 d-flex align-items-start">
-                                    <span class="me-2">•</span>
-                                    <div><strong>Respect the Locals:</strong> Follow the surfing etiquette and respect the local community and marine life.</div>
-                                </li>
-                            </ul>
                         </div>
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
 
         </main>
 
-        <!-- REPORTS FORM -->
+        <!-- REPORTS FORM MODAL -->
         <div class="modal fade" id="reportFormModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
@@ -203,7 +212,6 @@ session_start();
                                     <select class="form-select" name="status" required>
                                         <option value="Dangerous">Dangerous</option>
                                         <option value="Warning">Warning</option>
-                                        <option value="Safe">Safe</option>
                                     </select>
                                 </div>
                                 <div class="col-md-6">
@@ -235,24 +243,19 @@ session_start();
                 <div class="modal-content auth-modal-content text-center">
                     <div class="modal-body p-5">
                         <i class="bi bi-lock-fill lock-icon"></i>
-                        
                         <h3 class="auth-modal-title">Members Only</h3>
                         <p class="auth-modal-text">To view our accredited trainers and book a surfing session, you need to have a SurfSafe account.</p>
-                        
                         <div class="d-grid gap-2 mt-4">
                             <a href="signup.html" class="btn-signup py-2">Create an Account</a>
                             <a href="login.html" class="btn-login py-2">Log In</a>
                         </div>
-                        
                         <div class="report-actions">
                             <a href="#" class="btn btn-maybe-later mt-2" data-bs-dismiss="modal">See Reports</a>
                         </div>
-                        
                     </div>
                 </div>
             </div>
         </div>
-        
 
     </body>
 
